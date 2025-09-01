@@ -1,0 +1,80 @@
+# Laravel specific
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+# IDE and Editor files
+/.fleet
+/.idea
+/.vscode
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+storage/logs/*.log
+
+# Cache and temporary files
+/bootstrap/cache/*.php
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/app/public/*
+
+# Testing
+coverage/
+.phpunit.cache
+/.pest
+
+# Dependencies
+composer.lock
+package-lock.json
+yarn.lock
+
+# Build artifacts
+/public/mix-manifest.json
+/public/css/
+/public/js/
+
+# Laravel specific cache
+storage/debugbar/
+.rr.yaml
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Documentation build
+/docs/_build/
+
+# Environment-specific files
+.env.local
+.env.development
+.env.test
+.env.production.local
+
+# Temporary files
+*.tmp
+*.temp
