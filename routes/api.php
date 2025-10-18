@@ -2,7 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\ServiceDiscoveryController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\ServiceRequestController;
+use App\Http\Controllers\Api\PriceLookupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -89,6 +92,52 @@ Route::prefix('v1')->middleware(['auth:sanctum'])->group(function () {
                 ],
             ]);
         });
+    });
+    
+    // B2B Service Discovery Routes (accessible to partners and service providers)
+    Route::prefix('b2b')->group(function () {
+        Route::get('/service-offers', [ServiceDiscoveryController::class, 'getServiceOffers']);
+        Route::get('/service-offers/{serviceOffer}', [ServiceDiscoveryController::class, 'getServiceOffer']);
+        Route::get('/hotel-services', [ServiceDiscoveryController::class, 'getHotelServices']);
+        Route::get('/transport-services', [ServiceDiscoveryController::class, 'getTransportServices']);
+        Route::get('/service-providers', [ServiceDiscoveryController::class, 'getServiceProviders']);
+    });
+    
+    // Service Request Management
+    Route::prefix('service-requests')->group(function () {
+        // Create service request (agents only)
+        Route::post('/', [ServiceRequestController::class, 'store']);
+        
+        // Get service requests for current user
+        Route::get('/agent', [ServiceRequestController::class, 'agentIndex']);
+        Route::get('/provider', [ServiceRequestController::class, 'providerIndex']);
+        
+        // Individual service request operations
+        Route::get('/{id}', [ServiceRequestController::class, 'show']);
+        Route::put('/{id}/approve', [ServiceRequestController::class, 'approve']);
+        Route::put('/{id}/reject', [ServiceRequestController::class, 'reject']);
+        Route::put('/{id}/cancel', [ServiceRequestController::class, 'cancel']);
+        
+        // Package service request status
+        Route::get('/package/{packageId}/status', [ServiceRequestController::class, 'packageStatus']);
+    });
+    
+    // Package approval status (legacy)
+    Route::get('/packages/{id}/approval-status', [ServiceRequestController::class, 'packageApprovalStatus']);
+    
+    // Price Lookup API Routes
+    Route::prefix('pricing')->group(function () {
+        // Get base price for a service
+        Route::post('/base-price', [PriceLookupController::class, 'getBasePrice']);
+        
+        // Get price for a specific service request
+        Route::get('/service-request/{serviceRequestId}', [PriceLookupController::class, 'getServiceRequestPrice']);
+        
+        // Get price calculation for date range
+        Route::post('/date-range', [PriceLookupController::class, 'getPriceForDateRange']);
+        
+        // Batch price lookup
+        Route::post('/batch', [PriceLookupController::class, 'getBatchPrices']);
     });
     
     // Common authenticated routes (all roles)

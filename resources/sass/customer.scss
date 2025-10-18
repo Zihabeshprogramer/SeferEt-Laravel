@@ -1,0 +1,747 @@
+// ===========================================
+// SeferEt Customer Frontend Styles
+// Pixel-perfect match with Flutter mobile app
+// ===========================================
+
+// Import Bootstrap 5
+@import 'bootstrap/scss/bootstrap';
+
+// ===========================================
+// 1. DESIGN TOKENS FROM FLUTTER APP
+// ===========================================
+
+// Colors - Exact match from Flutter AppColors
+$primary-color: #2E8B57;        // Sea Green
+$secondary-color: #FFD700;       // Gold  
+$accent-color: #87CEEB;          // Sky Blue
+$background-color: #FFFFFF;      // White
+$text-color: #333333;            // Dark Gray
+$text-title-color: #FFFFFF;      // White
+$faded-text-color: #9E9E9E;      // Gray
+$placeholder-text-color: #BDBDBD; // Light Gray
+$divider-color: #E0E0E0;         // Very Light Gray
+$error-color: #FF6B6B;           // Red
+$success-color: #4ECDC4;         // Teal
+$warning-color: #FFE66D;         // Yellow
+$black-transparent: rgba(0, 0, 0, 0.1);
+
+// Typography - Exact match from Flutter AppTheme
+$font-family-base: 'Poppins', sans-serif;
+
+// Font sizes (converted from Flutter dp to rem)
+$font-size-headline-large: 2rem;    // 32dp
+$font-size-headline-medium: 1.75rem; // 28dp  
+$font-size-headline-small: 1.5rem;   // 24dp
+$font-size-title-large: 1.375rem;    // 22dp
+$font-size-title-medium: 1.125rem;   // 18dp
+$font-size-title-small: 1rem;        // 16dp
+$font-size-body-large: 1rem;         // 16dp
+$font-size-body-medium: 0.875rem;    // 14dp
+$font-size-body-small: 0.75rem;      // 12dp
+$font-size-label-large: 0.875rem;    // 14dp
+$font-size-label-medium: 0.75rem;    // 12dp
+$font-size-label-small: 0.6875rem;   // 11dp
+
+// Spacing Scale - Exact match from Flutter AppTheme
+$spacing-xs: 0.25rem;    // 4dp
+$spacing-sm: 0.5rem;     // 8dp
+$spacing-md: 1rem;       // 16dp
+$spacing-lg: 1.5rem;     // 24dp
+$spacing-xl: 2rem;       // 32dp
+$spacing-xxl: 3rem;      // 48dp
+
+// Border Radius - Exact match from Flutter AppTheme
+$border-radius-sm: 0.25rem;   // 4dp
+$border-radius-md: 0.5rem;    // 8dp
+$border-radius-lg: 1rem;      // 16dp
+$border-radius-xl: 1.5rem;    // 24dp
+
+// Elevation/Box Shadow - Exact match from Flutter AppTheme
+$elevation-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+$elevation-md: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+$elevation-lg: 0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10);
+
+// Icon Sizes - Exact match from Flutter AppTheme
+$icon-size-sm: 1rem;     // 16dp
+$icon-size-md: 1.5rem;   // 24dp
+$icon-size-lg: 2rem;     // 32dp
+$icon-size-xl: 3rem;     // 48dp
+
+// ===========================================
+// 2. OVERRIDE BOOTSTRAP VARIABLES
+// ===========================================
+
+// Override Bootstrap's primary colors with our Flutter colors
+$primary: $primary-color;
+$secondary: $secondary-color;
+$success: $success-color;
+$danger: $error-color;
+$warning: $warning-color;
+$info: $accent-color;
+$light: $background-color;
+$dark: $text-color;
+
+// Override Bootstrap's font family
+$font-family-sans-serif: $font-family-base;
+
+// Override Bootstrap's spacing
+$spacer: $spacing-md;
+$spacers: (
+  0: 0,
+  1: $spacing-xs,
+  2: $spacing-sm, 
+  3: $spacing-md,
+  4: $spacing-lg,
+  5: $spacing-xl,
+  6: $spacing-xxl
+);
+
+// Override Bootstrap's border radius
+$border-radius: $border-radius-md;
+$border-radius-sm: $border-radius-sm;
+$border-radius-lg: $border-radius-lg;
+
+// Override Bootstrap's shadows
+$box-shadow: $elevation-sm;
+$box-shadow-sm: $elevation-sm;
+$box-shadow-lg: $elevation-lg;
+
+// ===========================================
+// 3. BASE STYLES
+// ===========================================
+
+// Import Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+// Reset and base styles
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-family-base;
+  color: $text-color;
+  background-color: $background-color;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+// ===========================================
+// 4. TYPOGRAPHY CLASSES (Flutter-matching)
+// ===========================================
+
+.headline-large {
+  font-family: $font-family-base;
+  font-size: $font-size-headline-large;
+  font-weight: 700;
+  color: $text-color;
+  line-height: 1.2;
+  margin-bottom: $spacing-md;
+}
+
+.headline-medium {
+  font-family: $font-family-base;
+  font-size: $font-size-headline-medium;
+  font-weight: 700;
+  color: $text-color;
+  line-height: 1.2;
+  margin-bottom: $spacing-md;
+}
+
+.headline-small {
+  font-family: $font-family-base;
+  font-size: $font-size-headline-small;
+  font-weight: 700;
+  color: $text-color;
+  line-height: 1.3;
+  margin-bottom: $spacing-sm;
+}
+
+.title-large {
+  font-family: $font-family-base;
+  font-size: $font-size-title-large;
+  font-weight: 600;
+  color: $text-color;
+  line-height: 1.3;
+}
+
+.title-medium {
+  font-family: $font-family-base;
+  font-size: $font-size-title-medium;
+  font-weight: 600;
+  color: $text-color;
+  line-height: 1.4;
+}
+
+.title-small {
+  font-family: $font-family-base;
+  font-size: $font-size-title-small;
+  font-weight: 600;
+  color: $text-color;
+  line-height: 1.4;
+}
+
+.body-large {
+  font-family: $font-family-base;
+  font-size: $font-size-body-large;
+  font-weight: 400;
+  color: $text-color;
+  line-height: 1.6;
+}
+
+.body-medium {
+  font-family: $font-family-base;
+  font-size: $font-size-body-medium;
+  font-weight: 400;
+  color: $text-color;
+  line-height: 1.6;
+}
+
+.body-small {
+  font-family: $font-family-base;
+  font-size: $font-size-body-small;
+  font-weight: 400;
+  color: $text-color;
+  line-height: 1.6;
+}
+
+.label-large {
+  font-family: $font-family-base;
+  font-size: $font-size-label-large;
+  font-weight: 500;
+  color: $text-color;
+  line-height: 1.4;
+}
+
+.label-medium {
+  font-family: $font-family-base;
+  font-size: $font-size-label-medium;
+  font-weight: 500;
+  color: $text-color;
+  line-height: 1.4;
+}
+
+.label-small {
+  font-family: $font-family-base;
+  font-size: $font-size-label-small;
+  font-weight: 500;
+  color: $text-color;
+  line-height: 1.4;
+}
+
+// Text color utilities
+.text-primary { color: $primary-color !important; }
+.text-secondary { color: $secondary-color !important; }
+.text-accent { color: $accent-color !important; }
+.text-faded { color: $faded-text-color !important; }
+.text-placeholder { color: $placeholder-text-color !important; }
+.text-title { color: $text-title-color !important; }
+
+// ===========================================
+// 5. BUTTON STYLES (Flutter-matching)
+// ===========================================
+
+.btn {
+  font-family: $font-family-base;
+  font-weight: 600;
+  border: none;
+  border-radius: $border-radius-lg;
+  padding: $spacing-md $spacing-lg;
+  font-size: $font-size-body-large;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  transition: all 0.2s ease;
+  box-shadow: $elevation-sm;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $elevation-md;
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: $elevation-sm;
+  }
+}
+
+// Primary button (matches Flutter primary)
+.btn-primary {
+  background-color: $primary-color;
+  color: $text-title-color;
+  
+  &:hover {
+    background-color: darken($primary-color, 10%);
+    color: $text-title-color;
+  }
+}
+
+// Secondary button (matches Flutter secondary)
+.btn-secondary {
+  background-color: $secondary-color;
+  color: $text-color;
+  
+  &:hover {
+    background-color: darken($secondary-color, 10%);
+    color: $text-color;
+  }
+}
+
+// Outline button
+.btn-outline {
+  background-color: transparent;
+  color: $primary-color;
+  border: 2px solid $primary-color;
+  box-shadow: none;
+  
+  &:hover {
+    background-color: $primary-color;
+    color: $text-title-color;
+  }
+}
+
+// Text button
+.btn-text {
+  background-color: transparent;
+  color: $primary-color;
+  box-shadow: none;
+  padding: $spacing-sm $spacing-md;
+  
+  &:hover {
+    background-color: rgba($primary-color, 0.1);
+  }
+}
+
+// Icon button
+.btn-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+  background-color: $background-color;
+  color: $primary-color;
+  box-shadow: $elevation-sm;
+  
+  &:hover {
+    background-color: rgba($primary-color, 0.1);
+  }
+}
+
+// ===========================================
+// 6. CARD STYLES (Flutter-matching)
+// ===========================================
+
+.card {
+  background-color: $background-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $elevation-sm;
+  border: 1px solid $divider-color;
+  overflow: hidden;
+  
+  .card-header {
+    background-color: $background-color;
+    border-bottom: 1px solid $divider-color;
+    padding: $spacing-lg;
+  }
+  
+  .card-body {
+    padding: $spacing-lg;
+  }
+  
+  .card-footer {
+    background-color: rgba($divider-color, 0.3);
+    border-top: 1px solid $divider-color;
+    padding: $spacing-md $spacing-lg;
+  }
+}
+
+// Elevated card
+.card-elevated {
+  box-shadow: $elevation-md;
+}
+
+// Destination card (matches Flutter explore cards)
+.destination-card {
+  background-color: $background-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $elevation-sm;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $elevation-md;
+  }
+  
+  .destination-image {
+    height: 200px;
+    background: linear-gradient(45deg, rgba($primary-color, 0.1), rgba($accent-color, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    
+    .favorite-btn {
+      position: absolute;
+      top: $spacing-sm;
+      right: $spacing-sm;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba($background-color, 0.9);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $primary-color;
+    }
+  }
+  
+  .destination-info {
+    padding: $spacing-md;
+    
+    .destination-title {
+      font-size: $font-size-body-large;
+      font-weight: 700;
+      color: $text-color;
+      margin-bottom: $spacing-xs;
+    }
+    
+    .destination-rating {
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+      margin-bottom: $spacing-sm;
+      
+      .star-icon {
+        color: $warning-color;
+        font-size: $icon-size-sm;
+      }
+    }
+    
+    .destination-price {
+      font-size: $font-size-body-large;
+      font-weight: 700;
+      color: $primary-color;
+    }
+  }
+}
+
+// ===========================================
+// 7. FORM STYLES (Flutter-matching)
+// ===========================================
+
+.form-group {
+  margin-bottom: $spacing-lg;
+  
+  label {
+    display: block;
+    font-size: $font-size-body-small;
+    font-weight: 500;
+    color: $primary-color;
+    margin-bottom: $spacing-xs;
+  }
+}
+
+.form-control {
+  width: 100%;
+  padding: $spacing-md;
+  border: 1px solid $divider-color;
+  border-radius: $border-radius-lg;
+  font-family: $font-family-base;
+  font-size: $font-size-body-large;
+  color: $text-color;
+  background-color: $background-color;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+  }
+  
+  &::placeholder {
+    color: $placeholder-text-color;
+  }
+}
+
+// Input with prefix icon (matches Flutter text fields)
+.input-group {
+  position: relative;
+  
+  .input-icon {
+    position: absolute;
+    left: $spacing-md;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $primary-color;
+    font-size: $icon-size-sm;
+    z-index: 2;
+  }
+  
+  .form-control {
+    padding-left: 3rem;
+  }
+}
+
+// ===========================================
+// 8. NAVIGATION STYLES (Flutter-matching)
+// ===========================================
+
+.seferet-navbar {
+  background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%);
+  box-shadow: $elevation-md;
+  padding: $spacing-md 0;
+  
+  .navbar-brand {
+    color: $text-title-color;
+    font-size: $font-size-title-large;
+    font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    
+    &:hover {
+      color: $text-title-color;
+    }
+  }
+  
+  .navbar-nav {
+    .nav-link {
+      color: rgba($text-title-color, 0.8);
+      font-weight: 500;
+      padding: $spacing-sm $spacing-md;
+      border-radius: $border-radius-md;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+      
+      &:hover,
+      &.active {
+        color: $text-title-color;
+        background-color: rgba($text-title-color, 0.1);
+      }
+    }
+  }
+  
+  .navbar-toggler {
+    border: none;
+    color: $text-title-color;
+    
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+// Profile dropdown (matches Flutter profile section)
+.profile-dropdown {
+  .dropdown-menu {
+    border: none;
+    border-radius: $border-radius-lg;
+    box-shadow: $elevation-lg;
+    padding: $spacing-sm;
+    min-width: 200px;
+    
+    .dropdown-item {
+      border-radius: $border-radius-sm;
+      padding: $spacing-sm $spacing-md;
+      color: $text-color;
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      
+      &:hover {
+        background-color: rgba($primary-color, 0.1);
+        color: $primary-color;
+      }
+    }
+    
+    .dropdown-divider {
+      border-color: $divider-color;
+      margin: $spacing-sm 0;
+    }
+    
+    .dropdown-header {
+      color: $faded-text-color;
+      font-size: $font-size-body-small;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+// ===========================================
+// 9. STATS/METRICS CARDS (Flutter-matching)
+// ===========================================
+
+.stats-card {
+  background-color: $background-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $elevation-sm;
+  padding: $spacing-lg;
+  text-align: center;
+  border: 1px solid $divider-color;
+  
+  .stats-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto $spacing-sm;
+    font-size: $icon-size-md;
+  }
+  
+  .stats-value {
+    font-size: $font-size-title-medium;
+    font-weight: 700;
+    margin-bottom: $spacing-xs;
+  }
+  
+  .stats-label {
+    font-size: $font-size-body-small;
+    color: $faded-text-color;
+    font-weight: 500;
+  }
+  
+  &.stats-primary {
+    .stats-icon {
+      background-color: rgba($primary-color, 0.1);
+      color: $primary-color;
+    }
+    .stats-value {
+      color: $primary-color;
+    }
+  }
+  
+  &.stats-secondary {
+    .stats-icon {
+      background-color: rgba($secondary-color, 0.1);
+      color: $secondary-color;
+    }
+    .stats-value {
+      color: $secondary-color;
+    }
+  }
+  
+  &.stats-success {
+    .stats-icon {
+      background-color: rgba($success-color, 0.1);
+      color: $success-color;
+    }
+    .stats-value {
+      color: $success-color;
+    }
+  }
+  
+  &.stats-warning {
+    .stats-icon {
+      background-color: rgba($warning-color, 0.1);
+      color: $warning-color;
+    }
+    .stats-value {
+      color: $warning-color;
+    }
+  }
+}
+
+// ===========================================
+// 10. UTILITY CLASSES
+// ===========================================
+
+// Spacing utilities
+.p-xs { padding: $spacing-xs !important; }
+.p-sm { padding: $spacing-sm !important; }
+.p-md { padding: $spacing-md !important; }
+.p-lg { padding: $spacing-lg !important; }
+.p-xl { padding: $spacing-xl !important; }
+
+.m-xs { margin: $spacing-xs !important; }
+.m-sm { margin: $spacing-sm !important; }
+.m-md { margin: $spacing-md !important; }
+.m-lg { margin: $spacing-lg !important; }
+.m-xl { margin: $spacing-xl !important; }
+
+// Background utilities
+.bg-primary { background-color: $primary-color !important; }
+.bg-secondary { background-color: $secondary-color !important; }
+.bg-accent { background-color: $accent-color !important; }
+.bg-success { background-color: $success-color !important; }
+.bg-warning { background-color: $warning-color !important; }
+.bg-error { background-color: $error-color !important; }
+
+// Border radius utilities
+.rounded-sm { border-radius: $border-radius-sm !important; }
+.rounded-md { border-radius: $border-radius-md !important; }
+.rounded-lg { border-radius: $border-radius-lg !important; }
+.rounded-xl { border-radius: $border-radius-xl !important; }
+
+// Shadow utilities
+.shadow-sm { box-shadow: $elevation-sm !important; }
+.shadow-md { box-shadow: $elevation-md !important; }
+.shadow-lg { box-shadow: $elevation-lg !important; }
+
+// ===========================================
+// 11. RESPONSIVE DESIGN
+// ===========================================
+
+@media (max-width: 768px) {
+  .btn {
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-body-medium;
+  }
+  
+  .card-body {
+    padding: $spacing-md;
+  }
+  
+  .stats-card {
+    padding: $spacing-md;
+  }
+  
+  .destination-card {
+    .destination-image {
+      height: 150px;
+    }
+  }
+}
+
+// ===========================================
+// 12. ANIMATIONS
+// ===========================================
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.3s ease forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}

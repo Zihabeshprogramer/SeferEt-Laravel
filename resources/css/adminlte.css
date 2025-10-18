@@ -1,0 +1,207 @@
+/* AdminLTE v4.0.0 Integration for SeferEt */
+
+/* Import AdminLTE and dependencies */
+@import '~bootstrap/dist/css/bootstrap.min.css';
+@import '~@fortawesome/fontawesome-free/css/all.min.css';
+@import '~admin-lte/dist/css/adminlte.min.css';
+@import '~overlayScrollbars/styles/overlayscrollbars.min.css';
+@import '~select2/dist/css/select2.min.css';
+
+/* SeferEt Custom Theme Variables */
+:root {
+  --seferet-primary: #2E8B57;     /* Sea Green */
+  --seferet-secondary: #FFD700;   /* Gold */
+  --seferet-accent: #87CEEB;      /* Sky Blue */
+  --seferet-success: #4ECDC4;
+  --seferet-warning: #FFE66D;
+  --seferet-danger: #FF6B6B;
+  --seferet-dark: #2C3E50;
+  --seferet-light: #F8F9FA;
+}
+
+/* Custom Primary Color Override */
+.btn-primary {
+  background-color: var(--seferet-primary) !important;
+  border-color: var(--seferet-primary) !important;
+}
+
+.btn-primary:hover {
+  background-color: #267348 !important;
+  border-color: #267348 !important;
+}
+
+/* Sidebar Customization */
+.main-sidebar {
+  background: linear-gradient(180deg, var(--seferet-primary) 0%, #267348 100%) !important;
+}
+
+.nav-sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.nav-sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.nav-sidebar .nav-link.active {
+  background-color: var(--seferet-accent) !important;
+  color: var(--seferet-dark) !important;
+}
+
+/* Brand Logo */
+.brand-link {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.brand-text {
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* Navbar Customization */
+.main-header .navbar {
+  background-color: white !important;
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+/* Cards and Content */
+.card-primary {
+  border-top: 3px solid var(--seferet-primary) !important;
+}
+
+.card-header {
+  background-color: rgba(46, 139, 87, 0.1) !important;
+  border-bottom: 1px solid rgba(46, 139, 87, 0.2) !important;
+}
+
+/* Info Boxes */
+.info-box-icon {
+  background-color: var(--seferet-primary) !important;
+}
+
+.info-box-content .info-box-text {
+  color: var(--seferet-dark) !important;
+}
+
+/* Small Boxes */
+.small-box.bg-primary {
+  background: linear-gradient(45deg, var(--seferet-primary), #3ea76a) !important;
+}
+
+.small-box.bg-secondary {
+  background: linear-gradient(45deg, var(--seferet-secondary), #ffed4e) !important;
+}
+
+.small-box.bg-success {
+  background: linear-gradient(45deg, var(--seferet-success), #6ed7d0) !important;
+}
+
+.small-box.bg-warning {
+  background: linear-gradient(45deg, var(--seferet-warning), #ffef8a) !important;
+}
+
+/* Buttons */
+.btn-outline-primary {
+  color: var(--seferet-primary) !important;
+  border-color: var(--seferet-primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--seferet-primary) !important;
+  border-color: var(--seferet-primary) !important;
+}
+
+/* Links */
+a {
+  color: var(--seferet-primary) !important;
+}
+
+a:hover {
+  color: #267348 !important;
+}
+
+/* Progress Bars */
+.progress-bar {
+  background-color: var(--seferet-primary) !important;
+}
+
+/* Custom Classes for SeferEt */
+.seferet-card {
+  border-left: 4px solid var(--seferet-primary);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.seferet-stats-box {
+  background: linear-gradient(135deg, var(--seferet-primary) 0%, #3ea76a 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.seferet-icon {
+  color: var(--seferet-accent);
+  font-size: 2rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .main-sidebar {
+    margin-left: -250px;
+  }
+  
+  .sidebar-open .main-sidebar {
+    margin-left: 0;
+  }
+}
+
+/* Custom Animation */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Select2 Customization */
+.select2-container--default .select2-selection--single {
+  height: 38px !important;
+  border: 1px solid #ced4da !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 36px !important;
+}
+
+/* Chart.js Customization */
+.chart-container {
+  position: relative;
+  height: 300px;
+  margin: 1rem 0;
+}
+
+/* Loading Spinner */
+.seferet-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--seferet-primary);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

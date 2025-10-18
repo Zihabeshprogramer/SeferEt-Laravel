@@ -40,7 +40,7 @@ class AuthController extends BaseApiController
             'role' => $request->role,
             'phone' => $request->phone,
             'country' => $request->country,
-            'is_active' => true,
+            'status' => 'active',
         ]);
 
         $token = $user->createToken('auth_token', [$user->role])->plainTextToken;
@@ -53,7 +53,7 @@ class AuthController extends BaseApiController
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'country' => $user->country,
-                'is_active' => $user->is_active,
+                'is_active' => $user->isActive(),
                 'created_at' => $user->created_at,
             ],
             'access_token' => $token,
@@ -84,7 +84,7 @@ class AuthController extends BaseApiController
 
         $user = Auth::user();
 
-        if (!$user->is_active) {
+        if (!$user->isActive()) {
             return $this->forbiddenResponse('Account is inactive');
         }
 
@@ -101,7 +101,7 @@ class AuthController extends BaseApiController
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'country' => $user->country,
-                'is_active' => $user->is_active,
+                'is_active' => $user->isActive(),
                 'created_at' => $user->created_at,
             ],
             'access_token' => $token,
@@ -139,7 +139,7 @@ class AuthController extends BaseApiController
             'role' => $user->role,
             'phone' => $user->phone,
             'country' => $user->country,
-            'is_active' => $user->is_active,
+            'is_active' => $user->isActive(),
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
         ]);

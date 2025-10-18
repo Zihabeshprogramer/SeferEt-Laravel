@@ -12,7 +12,9 @@ A comprehensive multi-platform Umrah travel booking system built with Laravel 10
 
 ### User Roles
 - **Customer**: End users who book Umrah packages
-- **Partner**: Travel agencies/operators who create and manage packages
+- **Travel Agent**: Travel agencies who create and manage packages
+- **Hotel Provider**: Hotel service providers offering accommodation
+- **Transport Provider**: Transport service providers (buses, transfers, etc.)
 - **Admin**: System administrators with full access
 
 ## Project Structure
@@ -47,9 +49,14 @@ SeferEt-Laravel/
 │   │       ├── B2B/             # Partner pages
 │   │       └── Admin/           # Admin pages
 │   └── views/                   # Blade templates
-│       ├── b2c/
-│       ├── b2b/
-│       └── admin/
+│       ├── b2c/                 # Customer views
+│       ├── b2b/                 # B2B partner views
+│       │   ├── auth/            # B2B authentication
+│       │   ├── common/          # Shared B2B views
+│       │   ├── travel-agent/    # Travel agent specific
+│       │   ├── hotel-provider/  # Hotel provider specific
+│       │   └── transport-provider/ # Transport provider specific
+│       └── admin/               # Admin dashboard views
 ├── routes/
 │   ├── api.php                  # API routes with versioning
 │   └── web.php                  # Web routes for all interfaces
@@ -73,7 +80,9 @@ SeferEt-Laravel/
 
 ### Role-Specific Endpoints
 - `GET /api/v1/customer/dashboard` - Customer dashboard data
-- `GET /api/v1/partner/dashboard` - Partner dashboard data
+- `GET /api/v1/b2b/travel-agent/dashboard` - Travel agent dashboard
+- `GET /api/v1/b2b/hotel-provider/dashboard` - Hotel provider dashboard
+- `GET /api/v1/b2b/transport-provider/dashboard` - Transport provider dashboard
 - `GET /api/v1/admin/dashboard` - Admin dashboard data
 
 ## Installation & Setup
@@ -120,7 +129,10 @@ SeferEt-Laravel/
 ## Web Interface URLs
 
 - **B2C Customer Website**: `http://localhost:8000/`
-- **B2B Partner Portal**: `http://localhost:8000/partner/`
+- **B2B Partner Portal**: `http://localhost:8000/b2b/`
+  - Travel Agent Login: `http://localhost:8000/b2b/login`
+  - Hotel Provider Login: `http://localhost:8000/b2b/login`
+  - Transport Provider Login: `http://localhost:8000/b2b/login`
 - **Admin Dashboard**: `http://localhost:8000/admin/`
 
 ## API Testing
@@ -164,6 +176,41 @@ This system uses Laravel Sanctum for API authentication:
 2. **Consistent Responses**: All API responses follow the same JSON structure
 3. **Role-based Access**: Use middleware to protect routes based on user roles
 4. **Single Source of Truth**: The Laravel backend is the authoritative data source
+
+## B2B Partner Features
+
+### Travel Agents
+- Create and manage Umrah packages
+- Customer management
+- Commission tracking
+- Booking oversight
+
+### Hotel Providers
+- Hotel registration and management
+- Room type and pricing configuration
+- Availability calendar management
+- Booking and revenue tracking
+
+### Transport Providers ✅ COMPLETE
+- **Service Management**: Full CRUD operations for transport services
+- **Route Management**: Dynamic route creation with duration tracking
+- **Vehicle Management**: Vehicle types and specifications
+- **Location Management**: Pickup/dropoff location handling
+- **Operating Hours**: Time-based service availability
+- **Status Control**: Activate/deactivate services
+- Fleet and vehicle management (advanced features ready)
+- Booking management (framework ready)
+- Earnings tracking (framework ready)
+
+## Documentation
+
+Detailed documentation is available in the `/docs` folder:
+- [B2B Service Provider Implementation](./docs/B2B_SERVICE_PROVIDER_IMPLEMENTATION.md)
+- [Transport Provider Complete Guide](./docs/TRANSPORT_PROVIDER_COMPLETE.md) ✅ NEW
+- [B2B Views Structure](./docs/B2B_VIEWS_STRUCTURE.md)
+- [Project Status Overview](./docs/PROJECT_STATUS.md)
+- [Controller Structure](./docs/CONTROLLER_STRUCTURE.md)
+- [Admin Panel Structure](./docs/ADMIN_PANEL_RESTRUCTURE.md)
 
 ## Next Steps
 

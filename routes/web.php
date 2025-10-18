@@ -1,9 +1,20 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Web\B2C\HomeController as B2CHomeController;
-use App\Http\Controllers\Web\B2B\DashboardController as B2BDashboardController;
-use App\Http\Controllers\Web\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\Customer\HomeController;
+use App\Http\Controllers\Auth\B2BAuthController;
+use App\Http\Controllers\Auth\B2BRegisterController;
+use App\Http\Controllers\Auth\CustomerAuthController;
+use App\Http\Controllers\Auth\CustomerRegisterController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\UserModerationController;
+use App\Http\Controllers\Admin\PartnerManagementController;
+use App\Http\Controllers\B2B\DashboardController as B2BDashboardController;
+use App\Http\Controllers\B2B\HotelProviderController;
+use App\Http\Controllers\B2B\TransportProviderController;
+use App\Http\Controllers\B2B\ServiceOfferController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,62 +27,180 @@ use App\Http\Controllers\Web\Admin\DashboardController as AdminDashboardControll
 |
 */
 
-// B2C Customer Website Routes
-Route::prefix('/')->name('b2c.')->group(function () {
-    // Public routes
-    Route::get('/', [B2CHomeController::class, 'index'])->name('home');
-    Route::get('/packages', [B2CHomeController::class, 'packages'])->name('packages');
-    Route::get('/packages/{id}', [B2CHomeController::class, 'packageDetails'])->name('package.details');
-    Route::get('/about', [B2CHomeController::class, 'about'])->name('about');
-    Route::get('/contact', [B2CHomeController::class, 'contact'])->name('contact');
-    
-    // Authentication routes for web
-    Route::get('/login', [B2CHomeController::class, 'login'])->name('login');
-    Route::get('/register', [B2CHomeController::class, 'register'])->name('register');
-    
-    // Protected customer routes
-    Route::middleware(['auth:web', 'role:customer'])->group(function () {
-        Route::get('/dashboard', [B2CHomeController::class, 'dashboard'])->name('dashboard');
-        Route::get('/bookings', [B2CHomeController::class, 'bookings'])->name('bookings');
-        Route::get('/profile', [B2CHomeController::class, 'profile'])->name('profile');
-    });
+// Welcome page
+Route::get('/', function () {
+    return view('welcome');
 });
 
-// B2B Partner Portal Routes
-Route::prefix('partner')->name('b2b.')->group(function () {
-    // Partner authentication
-    Route::get('/login', [B2BDashboardController::class, 'login'])->name('login');
-    
-    // Protected partner routes
-    Route::middleware(['auth:web', 'role:partner'])->group(function () {
-        Route::get('/dashboard', [B2BDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/packages', [B2BDashboardController::class, 'packages'])->name('packages');
-        Route::get('/packages/create', [B2BDashboardController::class, 'createPackage'])->name('packages.create');
-        Route::get('/packages/{id}/edit', [B2BDashboardController::class, 'editPackage'])->name('packages.edit');
-        Route::get('/bookings', [B2BDashboardController::class, 'bookings'])->name('bookings');
-        Route::get('/analytics', [B2BDashboardController::class, 'analytics'])->name('analytics');
-        Route::get('/profile', [B2BDashboardController::class, 'profile'])->name('profile');
-    });
-});
+Route::get('/get/media/{media}', [HomeController::class, 'GetMedia'])->name('get.media');
 
-// Admin Dashboard Routes
+
+/*
+|--------------------------------------------------------------------------
+| Admin Authentication Routes
+|--------------------------------------------------------------------------
+*/
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Admin authentication
-    Route::get('/login', [AdminDashboardController::class, 'login'])->name('login');
+    // Admin Login Routes
+    Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [AdminAuthController::class, 'login']);
+    Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
     
-    // Protected admin routes
-    Route::middleware(['auth:web', 'role:admin'])->group(function () {
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
-        Route::get('/partners', [AdminDashboardController::class, 'partners'])->name('partners');
-        Route::get('/packages', [AdminDashboardController::class, 'packages'])->name('packages');
-        Route::get('/bookings', [AdminDashboardController::class, 'bookings'])->name('bookings');
-        Route::get('/analytics', [AdminDashboardController::class, 'analytics'])->name('analytics');
-        Route::get('/settings', [AdminDashboardController::class, 'settings'])->name('settings');
+    // Admin Dashboard Routes - Protected by auth middleware
+    Route::middleware(['auth', 'role.redirect'])->group(function () {
+        Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('users', function() {
+            return redirect()->route('admin.users.moderation');
+        })->name('users');
+        Route::get('partners', function() {
+            return redirect()->route('admin.partners.management');
+        })->name('partners');
+        Route::get('packages', [AdminDashboardController::class, 'packages'])->name('packages');
+        Route::get('bookings', [AdminDashboardController::class, 'bookings'])->name('bookings');
+        Route::get('analytics', [AdminDashboardController::class, 'analytics'])->name('analytics');
+        Route::get('settings', [AdminDashboardController::class, 'settings'])->name('settings');
+        Route::get('profile/{id}', [AdminDashboardController::class, 'profile'])->name('profile');
+        Route::post('profile/{id}', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
+        
+        // User Moderation Routes (Admin Panel Users Only)
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('moderation', [UserModerationController::class, 'index'])->name('moderation');
+            Route::post('{user}/status', [UserModerationController::class, 'setStatus'])->name('set-status');
+            Route::get('create-admin', [UserModerationController::class, 'createAdmin'])->name('create-admin');
+            Route::post('create-admin', [UserModerationController::class, 'storeAdmin'])->name('store-admin');
+            Route::get('{user}/edit', [UserModerationController::class, 'edit'])->name('edit');
+            Route::put('{user}', [UserModerationController::class, 'update'])->name('update');
+            Route::delete('{user}', [UserModerationController::class, 'destroy'])->name('destroy');
+        });
+        
+        
+        // Partner Management Routes (B2B Business Management)
+        Route::prefix('partners')->name('partners.')->group(function () {
+            // Specific routes MUST come before parameterized routes
+            Route::get('management', [PartnerManagementController::class, 'index'])->name('management');
+            Route::get('business/overview', [PartnerManagementController::class, 'businessOverview'])->name('business-overview');
+            Route::get('export', [PartnerManagementController::class, 'export'])->name('export');
+            
+            
+            // Hotel Service Review Routes
+            
+            Route::get('hotel-services', [PartnerManagementController::class, 'hotelServices'])->name('hotel-services');
+            Route::get('hotel-services/{service}', [PartnerManagementController::class, 'getHotelService'])->name('hotel-services.show');
+            Route::post('hotel-services/{service}/approve', [PartnerManagementController::class, 'approveHotelService'])->name('hotel-services.approve');
+            Route::post('hotel-services/{service}/reject', [PartnerManagementController::class, 'rejectHotelService'])->name('hotel-services.reject');
+            Route::post('hotel-services/{service}/suspend', [PartnerManagementController::class, 'suspendHotelService'])->name('hotel-services.suspend');
+            Route::post('hotel-services/{service}/reactivate', [PartnerManagementController::class, 'reactivateHotelService'])->name('hotel-services.reactivate');
+            
+            // Parameterized routes MUST come last
+            Route::get('{partner}', [PartnerManagementController::class, 'show'])->name('show');
+            Route::post('{partner}/approve', [PartnerManagementController::class, 'approve'])->name('approve');
+            Route::post('{partner}/reject', [PartnerManagementController::class, 'reject'])->name('reject');
+            Route::post('{partner}/suspend', [PartnerManagementController::class, 'suspend'])->name('suspend');
+            Route::post('{partner}/reactivate', [PartnerManagementController::class, 'reactivate'])->name('reactivate');
+        });
     });
 });
 
-// Fallback route
-Route::fallback(function () {
-    return view('errors.404');
+/*
+|--------------------------------------------------------------------------
+| B2B Routes - Load from separate file
+|--------------------------------------------------------------------------
+*/
+// Load B2B routes from dedicated file
+require __DIR__.'/b2b.php';
+
+/*
+|--------------------------------------------------------------------------
+| Public Customer Routes (E-commerce Style)
+|--------------------------------------------------------------------------
+*/
+// Public pages - no login required
+Route::get('/', [CustomerDashboardController::class, 'home'])->name('home');
+Route::get('/packages', [CustomerDashboardController::class, 'packages'])->name('packages');
+Route::get('/packages/{id}', [CustomerDashboardController::class, 'packageDetails'])->name('packages.details');
+Route::get('/flights', [CustomerDashboardController::class, 'flights'])->name('flights');
+Route::get('/flights/{id}', [CustomerDashboardController::class, 'flightDetails'])->name('flights.details');
+Route::get('/hotels', [CustomerDashboardController::class, 'hotels'])->name('hotels');
+Route::get('/hotels/{id}', [CustomerDashboardController::class, 'hotelDetails'])->name('hotels.details');
+Route::get('/explore', [CustomerDashboardController::class, 'explore'])->name('explore');
+Route::get('/about', [CustomerDashboardController::class, 'about'])->name('about');
+Route::get('/contact', [CustomerDashboardController::class, 'contact'])->name('contact');
+Route::post('/contact', [CustomerDashboardController::class, 'submitContact'])->name('contact.submit');
+
+/*
+|--------------------------------------------------------------------------
+| Customer Authentication & Account Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('customer')->name('customer.')->group(function () {
+    // Customer Login Routes
+    Route::get('login', [CustomerAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [CustomerAuthController::class, 'login']);
+    Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');
+    
+    // Customer Registration Routes
+    Route::get('register', [CustomerRegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('register', [CustomerRegisterController::class, 'register']);
+    
+    // Customer Account Routes - Protected by auth middleware (login required)
+    Route::middleware(['auth', 'role.redirect'])->group(function () {
+        Route::get('dashboard', [CustomerDashboardController::class, 'dashboard'])->name('dashboard');
+        Route::get('bookings', [CustomerDashboardController::class, 'bookings'])->name('bookings');
+        Route::get('bookings/{id}', [CustomerDashboardController::class, 'bookingDetails'])->name('bookings.show');
+        Route::get('profile', [CustomerDashboardController::class, 'profile'])->name('profile');
+        Route::post('profile', [CustomerDashboardController::class, 'updateProfile'])->name('profile.update');
+    });
+    
+    // Booking Routes - Require authentication
+    Route::middleware(['auth', 'role.redirect'])->group(function () {
+        // Package Booking
+        Route::post('packages/{id}/book', [CustomerDashboardController::class, 'startPackageBooking'])->name('packages.book');
+        Route::get('packages/{id}/checkout', [CustomerDashboardController::class, 'packageCheckout'])->name('packages.checkout');
+        Route::post('packages/{id}/checkout', [CustomerDashboardController::class, 'processPackageCheckout'])->name('packages.checkout.process');
+        
+        // Flight Booking
+        Route::post('flights/{id}/book', [CustomerDashboardController::class, 'startFlightBooking'])->name('flights.book');
+        Route::get('flights/{id}/checkout', [CustomerDashboardController::class, 'flightCheckout'])->name('flights.checkout');
+        Route::post('flights/{id}/checkout', [CustomerDashboardController::class, 'processFlightCheckout'])->name('flights.checkout.process');
+        
+        // Hotel Booking
+        Route::post('hotels/{id}/book', [CustomerDashboardController::class, 'startHotelBooking'])->name('hotels.book');
+        Route::get('hotels/{id}/checkout', [CustomerDashboardController::class, 'hotelCheckout'])->name('hotels.checkout');
+        Route::post('hotels/{id}/checkout', [CustomerDashboardController::class, 'processHotelCheckout'])->name('hotels.checkout.process');
+        
+        // Legacy checkout route for backward compatibility
+        Route::get('checkout/{bookingId}', [CustomerDashboardController::class, 'checkout'])->name('checkout');
+        Route::post('checkout/{bookingId}', [CustomerDashboardController::class, 'processCheckout'])->name('checkout.process');
+    });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Legacy Routes (Redirects)
+|--------------------------------------------------------------------------
+*/
+// Redirect legacy routes to customer routes
+Route::get('/login', function () {
+    return redirect()->route('customer.login');
+})->name('login');
+Route::get('/register', function () {
+    return redirect()->route('customer.register');
+});
+Route::get('/home', function () {
+    return redirect()->route('customer.dashboard');
+});
+Route::get('/dashboard', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        return match($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'partner' => redirect()->route('b2b.dashboard'),
+            'customer' => redirect()->route('customer.dashboard'),
+            default => redirect()->route('customer.dashboard')
+        };
+    }
+    return redirect()->route('customer.login');
+})->name('dashboard');
+
+// Keep Laravel's password reset routes
+Auth::routes(['login' => false, 'register' => false]);
