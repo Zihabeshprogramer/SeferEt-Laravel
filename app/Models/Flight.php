@@ -170,6 +170,9 @@ class Flight extends Model
         'included_services',
         'special_requirements',
         'payment_terms',
+        'is_featured',
+        'featured_at',
+        'featured_expires_at',
     ];
     
     /**
@@ -200,6 +203,9 @@ class Flight extends Model
         'allows_agent_collaboration' => 'boolean',
         'baggage_allowance' => 'array',
         'meal_service' => 'array',
+        'is_featured' => 'boolean',
+        'featured_at' => 'datetime',
+        'featured_expires_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
     
@@ -245,6 +251,26 @@ class Flight extends Model
         return $this->belongsToMany(User::class, 'flight_collaborations', 'flight_id', 'collaborator_agent_id')
                     ->withPivot(['status', 'commission_percentage', 'allocated_seats', 'booked_seats'])
                     ->withTimestamps();
+    }
+    
+    /**
+     * Get featured requests for this flight
+     */
+    public function featuredRequests(): HasMany
+    {
+        return $this->hasMany(FeaturedRequest::class, 'product_id')
+                    ->where('product_type', FeaturedRequest::PRODUCT_TYPE_FLIGHT);
+    }
+    
+    /**
+     * Get active featured request for this flight
+     */
+    public function activeFeaturedRequest()
+    {
+        return $this->featuredRequests()
+                    ->where('status', FeaturedRequest::STATUS_APPROVED)
+                    ->active()
+                    ->first();
     }
     
     /**
@@ -328,6 +354,18 @@ class Flight extends Model
             $q->whereNull('booking_deadline')
               ->orWhere('booking_deadline', '>=', now()->toDateString());
         });
+    }
+    
+    /**
+     * Scope for featured flights
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true)
+                    ->where(function($q) {
+                        $q->whereNull('featured_expires_at')
+                          ->orWhere('featured_expires_at', '>', now());
+                    });
     }
     
     /**

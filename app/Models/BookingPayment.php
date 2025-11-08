@@ -4,14 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class BookingPayment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'hotel_booking_id',
+        'bookable_id',
+        'bookable_type',
         'payment_reference',
         'amount',
         'payment_method',
@@ -27,11 +28,11 @@ class BookingPayment extends Model
     ];
 
     /**
-     * Get the booking for this payment
+     * Get the parent bookable model (HotelBooking, TransportBooking, etc.)
      */
-    public function booking(): BelongsTo
+    public function bookable(): MorphTo
     {
-        return $this->belongsTo(HotelBooking::class, 'hotel_booking_id');
+        return $this->morphTo();
     }
 
     /**

@@ -61,6 +61,25 @@
         </div>
     </div>
 
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
     <!-- Packages Table -->
     <div class="card">
         <div class="card-header">
@@ -109,7 +128,7 @@
                                 <th>Partner</th>
                                 <th>Price</th>
                                 <th>Duration</th>
-                                <th>Status</th>
+                                <th>Status & Approval</th>
                                 <th>Created Date</th>
                                 <th>Actions</th>
                             </tr>
@@ -124,49 +143,74 @@
                                         <small class="text-muted">{{ $package->type ?? 'Umrah Package' }}</small>
                                     </td>
                                     <td>
-                                        {{ $package->partner->name ?? 'Sample Partner' }}
+                                        {{ $package->creator->name ?? 'Unknown Partner' }}
                                         <br>
-                                        <small class="text-muted">{{ $package->partner->company_name ?? 'Sample Company' }}</small>
+                                        <small class="text-muted">{{ $package->creator->email ?? 'No email' }}</small>
                                     </td>
                                     <td>
-                                        <strong>${{ number_format($package->price ?? 2500, 2) }}</strong>
+                                        <strong>${{ number_format($package->base_price ?? 0, 2) }}</strong>
                                         <br>
                                         <small class="text-muted">per person</small>
                                     </td>
                                     <td>{{ $package->duration ?? '14' }} days</td>
                                     <td>
-                                        @php
-                                            $status = $package->status ?? 'active';
-                                        @endphp
-                                        @if($status === 'active')
-                                            <span class="badge badge-success">Active</span>
-                                        @elseif($status === 'pending')
-                                            <span class="badge badge-warning">Pending</span>
-                                        @elseif($status === 'rejected')
-                                            <span class="badge badge-danger">Rejected</span>
-                                        @elseif($status === 'draft')
-                                            <span class="badge badge-secondary">Draft</span>
-                                        @else
-                                            <span class="badge badge-secondary">{{ ucfirst($status) }}</span>
-                                        @endif
+                                        <div class="d-flex flex-column">
+                                            <!-- Package Status -->
+                                            @php
+                                                $status = $package->status ?? 'draft';
+                                            @endphp
+                                            @if($status === 'active')
+                                                <span class="badge badge-success mb-1">Active</span>
+                                            @elseif($status === 'draft')
+                                                <span class="badge badge-secondary mb-1">Draft</span>
+                                            @elseif($status === 'inactive')
+                                                <span class="badge badge-warning mb-1">Inactive</span>
+                                            @else
+                                                <span class="badge badge-secondary mb-1">{{ ucfirst($status) }}</span>
+                                            @endif
+                                            
+                                            <!-- Approval Status -->
+                                            @php
+                                                $approvalStatus = $package->approval_status ?? 'pending';
+                                            @endphp
+                                            @if($approvalStatus === 'approved')
+                                                <span class="badge badge-success">✓ Approved</span>
+                                            @elseif($approvalStatus === 'pending')
+                                                <span class="badge badge-warning">⏳ Pending Review</span>
+                                            @elseif($approvalStatus === 'rejected')
+                                                <span class="badge badge-danger">✗ Rejected</span>
+                                            @else
+                                                <span class="badge badge-secondary">{{ ucfirst($approvalStatus) }}</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>{{ isset($package->created_at) ? $package->created_at->format('M d, Y') : 'Jan 15, 2024' }}</td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-info" title="View Details">
+                                            <a href="{{ route('admin.packages.show', $package->id) }}" class="btn btn-info" title="View Details">
                                                 <i class="fas fa-eye"></i>
-                                            </button>
+                                            </a>
                                             
-                                            @if(($package->status ?? 'pending') === 'pending')
-                                                <button type="button" class="btn btn-success" title="Approve Package">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-danger" title="Reject Package">
+                                            @if(($package->approval_status ?? 'pending') === 'pending')
+                                                <form method="POST" action="{{ route('admin.packages.approve', $package->id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to approve this package?')">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-success" title="Approve Package">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                <button type="button" class="btn btn-danger" title="Reject Package" onclick="showRejectModal({{ $package->id }}, '{{ addslashes($package->name) }}')">
                                                     <i class="fas fa-times"></i>
                                                 </button>
+                                            @elseif(($package->approval_status ?? 'pending') === 'rejected')
+                                                <form method="POST" action="{{ route('admin.packages.approve', $package->id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to re-approve this package?')">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-outline-success" title="Re-approve Package">
+                                                        <i class="fas fa-redo"></i>
+                                                    </button>
+                                                </form>
                                             @endif
                                             
-                                            <button type="button" class="btn btn-warning" title="Edit Package">
+                                            <button type="button" class="btn btn-warning" title="Edit Package (Coming Soon)" disabled>
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                         </div>
@@ -193,13 +237,95 @@
             @endif
         </div>
     </div>
+
+    <!-- Package Rejection Modal -->
+    <div class="modal fade" id="rejectPackageModal" tabindex="-1" role="dialog" aria-labelledby="rejectPackageModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectPackageModalLabel">Reject Package</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="rejectPackageForm" method="POST" action="">
+                    @csrf
+                    <div class="modal-body">
+                        <p>Are you sure you want to reject the package "<strong id="packageNameToReject"></strong>"?</p>
+                        
+                        <div class="form-group">
+                            <label for="rejectionReason">Reason for rejection (optional):</label>
+                            <textarea class="form-control" id="rejectionReason" name="reason" rows="3" placeholder="Please provide a reason for rejection..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times mr-1"></i>Reject Package
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
 <script>
 $(document).ready(function() {
-    // Package management functionality can be added here
-
+    // Status filter functionality
+    $('.card-tools .btn-group .btn').click(function() {
+        $('.card-tools .btn-group .btn').removeClass('btn-primary btn-success btn-warning btn-danger')
+                                      .addClass('btn-outline-secondary');
+        
+        if ($(this).text().includes('All')) {
+            $(this).removeClass('btn-outline-secondary').addClass('btn-primary');
+            showAllPackages();
+        } else if ($(this).text().includes('Active')) {
+            $(this).removeClass('btn-outline-secondary').addClass('btn-success');
+            filterPackages('active');
+        } else if ($(this).text().includes('Pending')) {
+            $(this).removeClass('btn-outline-secondary').addClass('btn-warning');
+            filterPackages('pending');
+        } else if ($(this).text().includes('Rejected')) {
+            $(this).removeClass('btn-outline-secondary').addClass('btn-danger');
+            filterPackages('rejected');
+        }
+    });
+    
+    function showAllPackages() {
+        $('table tbody tr').show();
+    }
+    
+    function filterPackages(status) {
+        $('table tbody tr').each(function() {
+            const statusBadges = $(this).find('.badge');
+            let hasStatus = false;
+            
+            statusBadges.each(function() {
+                const badgeText = $(this).text().toLowerCase();
+                if ((status === 'active' && badgeText.includes('active')) ||
+                    (status === 'pending' && badgeText.includes('pending')) ||
+                    (status === 'rejected' && badgeText.includes('rejected'))) {
+                    hasStatus = true;
+                }
+            });
+            
+            if (hasStatus) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
 });
+
+// Function to show rejection modal
+function showRejectModal(packageId, packageName) {
+    $('#packageNameToReject').text(packageName);
+    $('#rejectPackageForm').attr('action', '/admin/packages/' + packageId + '/reject');
+    $('#rejectionReason').val('');
+    $('#rejectPackageModal').modal('show');
+}
 </script>
 @endsection

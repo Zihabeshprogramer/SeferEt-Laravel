@@ -13,10 +13,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Represents flight bookings made from approved service requests
  * 
  * @property int $id
+ * @property int $offer_id
  * @property int $flight_id
  * @property int $customer_id
+ * @property int $agent_id
  * @property string $booking_reference
  * @property string $confirmation_code
+ * @property string $pnr
  * @property int $passengers
  * @property string $flight_class
  * @property decimal $seat_price
@@ -99,10 +102,13 @@ class FlightBooking extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'offer_id',
         'flight_id',
         'customer_id',
+        'agent_id',
         'booking_reference',
         'confirmation_code',
+        'pnr',
         'passengers',
         'flight_class',
         'seat_price',
@@ -160,6 +166,22 @@ class FlightBooking extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    /**
+     * Get the agent (User) associated with this booking
+     */
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    /**
+     * Get the offer associated with this booking
+     */
+    public function offer(): BelongsTo
+    {
+        return $this->belongsTo(Offer::class);
     }
 
     /**

@@ -8,10 +8,14 @@ use App\Models\TransportBooking;
 use App\Models\ServiceOffer;
 use App\Models\TransportPricingRule;
 use App\Models\TransportRate;
+use App\Models\Vehicle;
+use App\Models\Driver;
+use App\Models\VehicleAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
@@ -558,24 +562,96 @@ class TransportProviderController extends Controller
         }
         
         $validated = $request->validate([
-            'vehicle_details' => 'nullable|array',
-            'driver_details' => 'nullable|array',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
+            'primary_driver_id' => 'nullable|exists:drivers,id',
+            'secondary_driver_id' => 'nullable|exists:drivers,id',
             'pickup_notes' => 'nullable|string|max:500',
         ]);
         
-        $booking->update([
-            'status' => 'confirmed',
-            'confirmed_at' => now(),
-            'vehicle_details' => $validated['vehicle_details'] ?? null,
-            'driver_details' => $validated['driver_details'] ?? null,
-            'notes' => ($booking->notes ? $booking->notes . "\n\n" : '') . ($validated['pickup_notes'] ?? ''),
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking confirmed successfully!',
-            'booking' => $booking->fresh(['transportService', 'customer'])
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            // Build vehicle and driver details from IDs
+            $vehicleDetails = null;
+            $driverDetails = null;
+            
+            if (!empty($validated['vehicle_id'])) {
+                $vehicle = Vehicle::find($validated['vehicle_id']);
+                if ($vehicle && $vehicle->provider_id === $provider->id) {
+                    $vehicleDetails = [
+                        'id' => $vehicle->id,
+                        'name' => $vehicle->vehicle_name,
+                        'plate' => $vehicle->plate_number,
+                        'type' => $vehicle->vehicle_type,
+                        'capacity' => $vehicle->capacity,
+                    ];
+                    
+                    // Create VehicleAssignment
+                    VehicleAssignment::create([
+                        'vehicle_id' => $vehicle->id,
+                        'primary_driver_id' => $validated['primary_driver_id'] ?? null,
+                        'secondary_driver_id' => $validated['secondary_driver_id'] ?? null,
+                        'provider_id' => $provider->id,
+                        'start_date' => $booking->pickup_datetime->format('Y-m-d'),
+                        'end_date' => $booking->dropoff_datetime->format('Y-m-d'),
+                        'status' => VehicleAssignment::STATUS_SCHEDULED,
+                        'notes' => $validated['pickup_notes'] ?? null,
+                        'metadata' => [
+                            'booking_id' => $booking->id,
+                            'booking_reference' => $booking->booking_reference,
+                            'route' => $booking->pickup_location . ' → ' . $booking->dropoff_location,
+                        ],
+                    ]);
+                }
+            }
+            
+            if (!empty($validated['primary_driver_id'])) {
+                $driver = Driver::find($validated['primary_driver_id']);
+                if ($driver && $driver->provider_id === $provider->id) {
+                    $driverDetails = [
+                        'id' => $driver->id,
+                        'name' => $driver->name,
+                        'phone' => $driver->phone,
+                        'license' => $driver->license_number,
+                    ];
+                    
+                    // Add secondary driver if provided
+                    if (!empty($validated['secondary_driver_id'])) {
+                        $secondaryDriver = Driver::find($validated['secondary_driver_id']);
+                        if ($secondaryDriver && $secondaryDriver->provider_id === $provider->id) {
+                            $driverDetails['secondary'] = [
+                                'id' => $secondaryDriver->id,
+                                'name' => $secondaryDriver->name,
+                                'phone' => $secondaryDriver->phone,
+                            ];
+                        }
+                    }
+                }
+            }
+            
+            $booking->update([
+                'status' => 'confirmed',
+                'confirmed_at' => now(),
+                'vehicle_details' => $vehicleDetails,
+                'driver_details' => $driverDetails,
+                'notes' => ($booking->notes ? $booking->notes . "\n\n" : '') . ($validated['pickup_notes'] ?? ''),
+            ]);
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking confirmed and vehicle/driver assigned successfully!',
+                'booking' => $booking->fresh(['transportService', 'customer'])
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to confirm booking: ' . $e->getMessage()
+            ], 500);
+        }
     }
     
     /**
@@ -786,5 +862,73 @@ class TransportProviderController extends Controller
         $status = $transportService->is_active ? 'activated' : 'deactivated';
         
         return back()->with('success', "Transport service {$status} successfully!");
+    }
+
+    /**
+     * Display transport provider profile page
+     */
+    public function profile(): View
+    {
+        $provider = Auth::user();
+        
+        if (!$provider->isTransportProvider()) {
+            abort(403, 'Access denied. Transport provider access required.');
+        }
+        
+        // Get provider statistics
+        $stats = [
+            'total_services' => TransportService::where('provider_id', $provider->id)->count(),
+            'active_services' => TransportService::where('provider_id', $provider->id)->where('is_active', true)->count(),
+            'total_vehicles' => Vehicle::where('provider_id', $provider->id)->count(),
+            'total_drivers' => Driver::where('provider_id', $provider->id)->count(),
+            'total_bookings' => TransportBooking::whereHas('transportService', function ($query) use ($provider) {
+                $query->where('provider_id', $provider->id);
+            })->count(),
+            'completed_bookings' => TransportBooking::whereHas('transportService', function ($query) use ($provider) {
+                $query->where('provider_id', $provider->id);
+            })->where('status', 'completed')->count(),
+        ];
+        
+        return view('b2b.transport-provider.profile.index', compact('provider', 'stats'));
+    }
+
+    /**
+     * Update transport provider profile
+     */
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $provider = Auth::user();
+        
+        if (!$provider->isTransportProvider()) {
+            abort(403, 'Access denied. Transport provider access required.');
+        }
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $provider->id,
+            'phone' => 'nullable|string|max:20',
+            'contact_phone' => 'nullable|string|max:20',
+            'company_name' => 'nullable|string|max:255',
+            'company_registration_number' => 'nullable|string|max:255',
+            'tax_number' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
+            'postal_code' => 'nullable|string|max:20',
+            'company_description' => 'nullable|string|max:1000',
+            'website' => 'nullable|url|max:255',
+            'password' => 'nullable|min:8|confirmed',
+        ]);
+        
+        // Remove password if not provided
+        if (empty($validated['password'])) {
+            unset($validated['password']);
+        }
+        
+        $provider->update($validated);
+        
+        return redirect()->route('b2b.transport-provider.profile.index')
+                       ->with('success', 'Profile updated successfully!');
     }
 }

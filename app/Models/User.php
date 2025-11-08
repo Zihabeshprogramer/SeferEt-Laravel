@@ -356,59 +356,59 @@ class User extends Authenticatable
     // ===========================================
 
     /**
-     * Get company name only for partners
+     * Get company name for B2B users (partners and service providers)
      */
     public function getCompanyNameAttribute($value): ?string
     {
-        return $this->isPartner() ? $value : null;
+        return $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Get company registration number only for partners
+     * Get company registration number for B2B users (partners and service providers)
      */
     public function getCompanyRegistrationNumberAttribute($value): ?string
     {
-        return $this->isPartner() ? $value : null;
+        return $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Get contact phone only for partners
+     * Get contact phone for B2B users (partners and service providers)
      */
     public function getContactPhoneAttribute($value): ?string
     {
-        return $this->isPartner() ? $value : null;
+        return $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Get company description only for partners
+     * Get company description for B2B users (partners and service providers)
      */
     public function getCompanyDescriptionAttribute($value): ?string
     {
-        return $this->isPartner() ? $value : null;
+        return $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Get business license only for partners
+     * Get business license for B2B users (partners and service providers)
      */
     public function getBusinessLicenseAttribute($value): ?string
     {
-        return $this->isPartner() ? $value : null;
+        return $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Get tax number only for partners
+     * Get tax number for B2B users (partners and service providers)
      */
     public function getTaxNumberAttribute($value): ?string
     {
-        return $this->isPartner() ? $value : null;
+        return $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Get website only for partners
+     * Get website for B2B users (partners and service providers)
      */
     public function getWebsiteAttribute($value): ?string
     {
-        return $this->isPartner() ? $value : null;
+        return $this->isB2BUser() ? $value : null;
     }
 
     // ===========================================
@@ -416,59 +416,59 @@ class User extends Authenticatable
     // ===========================================
 
     /**
-     * Set company name only for partners
+     * Set company name for B2B users (partners and service providers)
      */
     public function setCompanyNameAttribute($value): void
     {
-        $this->attributes['company_name'] = $this->isPartner() ? $value : null;
+        $this->attributes['company_name'] = $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Set company registration number only for partners
+     * Set company registration number for B2B users (partners and service providers)
      */
     public function setCompanyRegistrationNumberAttribute($value): void
     {
-        $this->attributes['company_registration_number'] = $this->isPartner() ? $value : null;
+        $this->attributes['company_registration_number'] = $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Set contact phone only for partners
+     * Set contact phone for B2B users (partners and service providers)
      */
     public function setContactPhoneAttribute($value): void
     {
-        $this->attributes['contact_phone'] = $this->isPartner() ? $value : null;
+        $this->attributes['contact_phone'] = $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Set company description only for partners
+     * Set company description for B2B users (partners and service providers)
      */
     public function setCompanyDescriptionAttribute($value): void
     {
-        $this->attributes['company_description'] = $this->isPartner() ? $value : null;
+        $this->attributes['company_description'] = $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Set business license only for partners
+     * Set business license for B2B users (partners and service providers)
      */
     public function setBusinessLicenseAttribute($value): void
     {
-        $this->attributes['business_license'] = $this->isPartner() ? $value : null;
+        $this->attributes['business_license'] = $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Set tax number only for partners
+     * Set tax number for B2B users (partners and service providers)
      */
     public function setTaxNumberAttribute($value): void
     {
-        $this->attributes['tax_number'] = $this->isPartner() ? $value : null;
+        $this->attributes['tax_number'] = $this->isB2BUser() ? $value : null;
     }
 
     /**
-     * Set website only for partners
+     * Set website for B2B users (partners and service providers)
      */
     public function setWebsiteAttribute($value): void
     {
-        $this->attributes['website'] = $this->isPartner() ? $value : null;
+        $this->attributes['website'] = $this->isB2BUser() ? $value : null;
     }
 
     // ===========================================
@@ -674,6 +674,22 @@ class User extends Authenticatable
     public function packages(): HasMany
     {
         return $this->hasMany(Package::class, 'creator_id');
+    }
+    
+    /**
+     * Get user's favorites
+     */
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(UserFavorite::class);
+    }
+    
+    /**
+     * Get user's favorites by type
+     */
+    public function favoritesByType(string $type): HasMany
+    {
+        return $this->hasMany(UserFavorite::class)->where('type', $type);
     }
 
     /**

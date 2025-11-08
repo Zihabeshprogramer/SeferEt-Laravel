@@ -21,7 +21,8 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
     <!-- OverlayScrollbars CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/styles/overlayscrollbars.min.css">
     <!-- SweetAlert2 CSS -->
@@ -261,8 +262,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE JS -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+    <!-- Select2 JS - Using RC version that works better -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <!-- OverlayScrollbars JS -->
@@ -295,20 +296,37 @@
     <script>
         // Global Select2 initialization function
         window.initializeSelect2 = function(selector = '.select2') {
+            // Check if Select2 is loaded
+            if (typeof $.fn.select2 === 'undefined') {
+                console.error('Select2 is not loaded');
+                return;
+            }
+            
             $(selector).each(function() {
-                if (!$(this).hasClass('select2-hidden-accessible')) {
-                    $(this).select2({
-                        theme: 'bootstrap4',
-                        width: '100%',
-                        placeholder: $(this).data('placeholder') || $(this).attr('placeholder')
-                    });
+                // Skip if already initialized
+                if ($(this).hasClass('select2-hidden-accessible')) {
+                    return;
                 }
+                
+                $(this).select2({
+                    theme: 'bootstrap4',
+                    width: '100%',
+                    placeholder: $(this).data('placeholder') || $(this).attr('placeholder') || 'Select an option',
+                    allowClear: $(this).data('allow-clear') !== false
+                });
             });
         };
         
+        // Wait for all scripts to load before initializing
         $(document).ready(function() {
-            // Initialize Select2 for existing elements
-            window.initializeSelect2();
+            // Delay initialization slightly to ensure Select2 is fully loaded
+            setTimeout(function() {
+                console.log('Initializing Select2 globally...');
+                console.log('Select2 available:', typeof $.fn.select2 !== 'undefined');
+                
+                // Initialize Select2 for existing elements
+                window.initializeSelect2();
+            }, 200); // 200ms delay to ensure Select2 is loaded
             
             // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();

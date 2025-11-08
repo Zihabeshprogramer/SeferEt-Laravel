@@ -25,32 +25,40 @@
     <div class="search-section py-4 bg-light">
         <div class="container-fluid">
             <x-customer.card variant="elevated" elevation="md" padding="lg">
-                <form class="hotel-search-form" method="GET">
+                <form class="hotel-search-form" method="GET" id="hotels-search-form">
                     <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Destination</label>
-                            <select class="form-select" name="destination">
-                                <option value="">Select destination</option>
-                                <option value="makkah" {{ request('destination') == 'makkah' ? 'selected' : '' }}>Makkah</option>
-                                <option value="madinah" {{ request('destination') == 'madinah' ? 'selected' : '' }}>Madinah</option>
-                                <option value="both" {{ request('destination') == 'both' ? 'selected' : '' }}>Both Cities</option>
-                            </select>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Destination <span class="text-danger">*</span></label>
+                            <div class="position-relative">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="hotels-destination-input"
+                                       name="location_display" 
+                                       placeholder="Type city name (e.g., Makkah, Dubai)..."
+                                       autocomplete="off"
+                                       value="{{ request('location_display') }}"
+                                       required>
+                                <input type="hidden" name="location" id="hotels-location-code" value="{{ request('location') }}" required>
+                                <div id="hotels-city-suggestions" class="list-group position-absolute w-100" style="z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
+                            </div>
+                            <small class="text-muted">Start typing to search cities</small>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label fw-semibold">Check-in</label>
-                            <input type="date" class="form-control" name="checkin" value="{{ request('checkin') }}">
+                            <label class="form-label fw-semibold">Check-in <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="check_in" value="{{ request('check_in') }}" required min="{{ date('Y-m-d') }}">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label fw-semibold">Check-out</label>
-                            <input type="date" class="form-control" name="checkout" value="{{ request('checkout') }}">
+                            <label class="form-label fw-semibold">Check-out <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="check_out" value="{{ request('check_out') }}" required min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label class="form-label fw-semibold">Rooms</label>
                             <select class="form-select" name="rooms">
-                                <option value="1" {{ request('rooms') == '1' ? 'selected' : '' }}>1 Room</option>
-                                <option value="2" {{ request('rooms') == '2' ? 'selected' : '' }}>2 Rooms</option>
-                                <option value="3" {{ request('rooms') == '3' ? 'selected' : '' }}>3 Rooms</option>
-                                <option value="4+" {{ request('rooms') == '4+' ? 'selected' : '' }}>4+ Rooms</option>
+                                <option value="1" {{ request('rooms') == '1' ? 'selected' : '' }}>1</option>
+                                <option value="2" {{ request('rooms') == '2' ? 'selected' : '' }}>2</option>
+                                <option value="3" {{ request('rooms') == '3' ? 'selected' : '' }}>3</option>
+                                <option value="4" {{ request('rooms') == '4' ? 'selected' : '' }}>4</option>
+                                <option value="5" {{ request('rooms') == '5' ? 'selected' : '' }}>5+</option>
                             </select>
                         </div>
                         <div class="col-md-1">
@@ -60,6 +68,7 @@
                                 <option value="2" {{ request('guests') == '2' ? 'selected' : '' }}>2</option>
                                 <option value="3" {{ request('guests') == '3' ? 'selected' : '' }}>3</option>
                                 <option value="4" {{ request('guests') == '4' ? 'selected' : '' }}>4</option>
+                                <option value="5" {{ request('guests') == '5' ? 'selected' : '' }}>5+</option>
                             </select>
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
@@ -141,15 +150,9 @@
                                                     <small class="text-muted">+ taxes & fees</small>
                                                 </div>
                                                 <div class="booking-actions">
-                                                    @auth
-                                                        <x-customer.button variant="primary" size="sm">
-                                                            <i class="fas fa-calendar-check me-1"></i>Book
-                                                        </x-customer.button>
-                                                    @else
-                                                        <x-customer.button href="{{ route('customer.login') }}" variant="primary" size="sm">
-                                                            <i class="fas fa-sign-in-alt me-1"></i>Login
-                                                        </x-customer.button>
-                                                    @endauth
+                                                    <x-customer.button href="{{ route('hotels.details', $hotel['id']) }}" variant="primary" size="sm">
+                                                        <i class="fas fa-eye me-1"></i>View Details
+                                                    </x-customer.button>
                                                 </div>
                                             </div>
                                         </div>
@@ -266,6 +269,45 @@
     text-transform: uppercase;
 }
 
+/* City Autocomplete Styles */
+#hotels-city-suggestions {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 0.375rem;
+    margin-top: 2px;
+}
+
+#hotels-city-suggestions .list-group-item {
+    cursor: pointer;
+    border-left: none;
+    border-right: none;
+    transition: background-color 0.2s ease;
+}
+
+#hotels-city-suggestions .list-group-item:first-child {
+    border-top: none;
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+}
+
+#hotels-city-suggestions .list-group-item:last-child {
+    border-bottom-left-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}
+
+#hotels-city-suggestions .list-group-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+#hotels-city-suggestions .city-suggestion-item:hover {
+    background-color: #e7f1ff;
+}
+
+#hotels-destination-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
 @media (max-width: 768px) {
     .hotels-header {
         background-attachment: scroll;
@@ -284,4 +326,144 @@
     }
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Hotel search form validation and enhancement
+    const hotelForm = document.getElementById('hotels-search-form');
+    if (!hotelForm) {
+        console.error('Hotels search form not found');
+        return;
+    }
+    
+    const checkInInput = hotelForm.querySelector('input[name="check_in"]');
+    const checkOutInput = hotelForm.querySelector('input[name="check_out"]');
+    
+    // City autocomplete
+    const cityInput = document.getElementById('hotels-destination-input');
+    const cityCodeInput = document.getElementById('hotels-location-code');
+    const citySuggestions = document.getElementById('hotels-city-suggestions');
+    let searchTimeout;
+    
+    console.log('Hotels city autocomplete initialized');
+    console.log('City input found:', cityInput);
+    console.log('City code input found:', cityCodeInput);
+    console.log('Suggestions div found:', citySuggestions);
+    
+    if (!cityInput || !cityCodeInput || !citySuggestions) {
+        console.error('City autocomplete elements not found');
+        return;
+    }
+    
+    cityInput.addEventListener('input', function() {
+        const keyword = this.value.trim();
+        console.log('City input changed:', keyword);
+        
+        // Clear previous timeout
+        clearTimeout(searchTimeout);
+        
+        // Clear hidden input if user is typing
+        cityCodeInput.value = '';
+        
+        if (keyword.length < 2) {
+            citySuggestions.style.display = 'none';
+            citySuggestions.innerHTML = '';
+            return;
+        }
+        
+        console.log('Searching for:', keyword);
+        
+        // Debounce search
+        searchTimeout = setTimeout(function() {
+            console.log('Making fetch call to /api/cities/search');
+            fetch('/api/cities/search?keyword=' + encodeURIComponent(keyword))
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API Response:', data);
+                    if (data.success && data.data.length > 0) {
+                        let html = '';
+                        data.data.forEach(function(city) {
+                            html += `<a href="#" class="list-group-item list-group-item-action city-suggestion-item" 
+                                       data-code="${city.value}" 
+                                       data-name="${city.city_name}">
+                                        <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                        <strong>${city.city_name}</strong>
+                                        ${city.country ? '<small class="text-muted"> - ' + city.country + '</small>' : ''}
+                                        <small class="badge bg-secondary ms-2">${city.value}</small>
+                                     </a>`;
+                        });
+                        citySuggestions.innerHTML = html;
+                        citySuggestions.style.display = 'block';
+                    } else {
+                        citySuggestions.innerHTML = '<div class="list-group-item text-muted"><i class="fas fa-info-circle me-2"></i>No cities found</div>';
+                        citySuggestions.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('API Error:', error);
+                    citySuggestions.innerHTML = '<div class="list-group-item text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Failed to search cities</div>';
+                    citySuggestions.style.display = 'block';
+                });
+        }, 300); // 300ms debounce
+    });
+    
+    // Handle city selection
+    document.addEventListener('click', function(e) {
+        const suggestionItem = e.target.closest('.city-suggestion-item');
+        if (suggestionItem) {
+            e.preventDefault();
+            const cityCode = suggestionItem.getAttribute('data-code');
+            const cityName = suggestionItem.getAttribute('data-name');
+            
+            cityInput.value = cityName;
+            cityCodeInput.value = cityCode;
+            citySuggestions.style.display = 'none';
+            citySuggestions.innerHTML = '';
+        }
+        
+        // Hide suggestions when clicking outside
+        if (!e.target.closest('#hotels-destination-input') && !e.target.closest('#hotels-city-suggestions')) {
+            citySuggestions.style.display = 'none';
+        }
+    });
+    
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    
+    if (checkInInput) checkInInput.setAttribute('min', today);
+    if (checkOutInput) checkOutInput.setAttribute('min', tomorrow);
+    
+    // Update check-out minimum when check-in changes
+    if (checkInInput) {
+        checkInInput.addEventListener('change', function() {
+            const checkInDate = new Date(this.value);
+            const minCheckOutDate = new Date(checkInDate.getTime() + 86400000);
+            const minCheckOutStr = minCheckOutDate.toISOString().split('T')[0];
+            
+            if (checkOutInput) {
+                checkOutInput.setAttribute('min', minCheckOutStr);
+                
+                // Reset check-out if it's before the new minimum
+                if (checkOutInput.value && checkOutInput.value <= this.value) {
+                    checkOutInput.value = minCheckOutStr;
+                }
+            }
+        });
+    }
+    
+    // Form submission loading state
+    if (hotelForm) {
+        hotelForm.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+            }
+        });
+    }
+});
+</script>
 @endpush

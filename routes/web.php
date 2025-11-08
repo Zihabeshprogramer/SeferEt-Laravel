@@ -56,6 +56,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             return redirect()->route('admin.partners.management');
         })->name('partners');
         Route::get('packages', [AdminDashboardController::class, 'packages'])->name('packages');
+        Route::get('packages/{id}', [AdminDashboardController::class, 'viewPackage'])->name('packages.show');
+        Route::post('packages/{id}/approve', [AdminDashboardController::class, 'approvePackage'])->name('packages.approve');
+        Route::post('packages/{id}/reject', [AdminDashboardController::class, 'rejectPackage'])->name('packages.reject');
         Route::get('bookings', [AdminDashboardController::class, 'bookings'])->name('bookings');
         Route::get('analytics', [AdminDashboardController::class, 'analytics'])->name('analytics');
         Route::get('settings', [AdminDashboardController::class, 'settings'])->name('settings');
@@ -73,6 +76,30 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('{user}', [UserModerationController::class, 'destroy'])->name('destroy');
         });
         
+        
+        // Ad Management Routes
+        Route::prefix('ads')->name('ads.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\AdManagementController::class, 'index'])->name('index');
+            Route::get('/pending', [\App\Http\Controllers\Admin\AdManagementController::class, 'pending'])->name('pending');
+            Route::get('/{id}', [\App\Http\Controllers\Admin\AdManagementController::class, 'show'])->name('show');
+            Route::post('/{id}/approve', [\App\Http\Controllers\Admin\AdManagementController::class, 'approve'])->name('approve');
+            Route::post('/{id}/reject', [\App\Http\Controllers\Admin\AdManagementController::class, 'reject'])->name('reject');
+            Route::put('/{id}/scheduling', [\App\Http\Controllers\Admin\AdManagementController::class, 'updateScheduling'])->name('scheduling.update');
+            Route::put('/{id}/priority', [\App\Http\Controllers\Admin\AdManagementController::class, 'updatePriority'])->name('priority.update');
+            Route::post('/{id}/toggle-active', [\App\Http\Controllers\Admin\AdManagementController::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/bulk-approve', [\App\Http\Controllers\Admin\AdManagementController::class, 'bulkApprove'])->name('bulk-approve');
+            Route::post('/bulk-reject', [\App\Http\Controllers\Admin\AdManagementController::class, 'bulkReject'])->name('bulk-reject');
+            Route::delete('/{id}', [\App\Http\Controllers\Admin\AdManagementController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}/analytics', [\App\Http\Controllers\Admin\AdManagementController::class, 'analytics'])->name('analytics');
+            
+            // Ad Analytics Routes
+            Route::prefix('analytics')->name('analytics.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Admin\AdAnalyticsController::class, 'index'])->name('index');
+                Route::get('/export', [\App\Http\Controllers\Admin\AdAnalyticsController::class, 'export'])->name('export');
+                Route::get('/realtime', [\App\Http\Controllers\Admin\AdAnalyticsController::class, 'realtime'])->name('realtime');
+                Route::get('/{ad}', [\App\Http\Controllers\Admin\AdAnalyticsController::class, 'show'])->name('show');
+            });
+        });
         
         // Partner Management Routes (B2B Business Management)
         Route::prefix('partners')->name('partners.')->group(function () {
@@ -117,7 +144,12 @@ require __DIR__.'/b2b.php';
 // Public pages - no login required
 Route::get('/', [CustomerDashboardController::class, 'home'])->name('home');
 Route::get('/packages', [CustomerDashboardController::class, 'packages'])->name('packages');
-Route::get('/packages/{id}', [CustomerDashboardController::class, 'packageDetails'])->name('packages.details');
+Route::get('/packages/{identifier}', [CustomerDashboardController::class, 'packageDetails'])->name('packages.details')
+    ->where('identifier', '[0-9]+|[a-zA-Z0-9\-]+');
+// API route for search
+Route::get('/api/packages/search', [CustomerDashboardController::class, 'searchPackages'])->name('api.packages.search');
+Route::get('/api/packages/departure-cities', [CustomerDashboardController::class, 'getDepartureCities'])->name('api.packages.departure-cities');
+Route::get('/api/packages/destinations', [CustomerDashboardController::class, 'getDestinations'])->name('api.packages.destinations');
 Route::get('/flights', [CustomerDashboardController::class, 'flights'])->name('flights');
 Route::get('/flights/{id}', [CustomerDashboardController::class, 'flightDetails'])->name('flights.details');
 Route::get('/hotels', [CustomerDashboardController::class, 'hotels'])->name('hotels');
@@ -149,7 +181,13 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::get('bookings/{id}', [CustomerDashboardController::class, 'bookingDetails'])->name('bookings.show');
         Route::get('profile', [CustomerDashboardController::class, 'profile'])->name('profile');
         Route::post('profile', [CustomerDashboardController::class, 'updateProfile'])->name('profile.update');
+        
+        // My Flight Bookings (requires authentication)
+        Route::get('my-flight-bookings', [CustomerDashboardController::class, 'myFlightBookings'])->name('flights.my-bookings');
     });
+    
+    // Flight booking route (public - guests can book)
+    Route::get('flights/book/{hash}', [CustomerDashboardController::class, 'flightBooking'])->name('flights.booking');
     
     // Booking Routes - Require authentication
     Route::middleware(['auth', 'role.redirect'])->group(function () {

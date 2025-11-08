@@ -248,10 +248,10 @@
                         <div class="row">
                             @foreach($hotel->images as $image)
                                 <div class="col-md-4 mb-3">
-                                    <img src="{{ Storage::url($image) }}" 
+                                    <img src="{{ Storage::url($image['sizes']['medium'] ?? $image['sizes']['original'] ?? $image) }}" 
                                          class="img-fluid rounded" 
                                          alt="Hotel Image"
-                                         onclick="showImageModal('{{ Storage::url($image) }}')">
+                                         onclick="showImageModal('{{ Storage::url($image['sizes']['large'] ?? $image['sizes']['original'] ?? $image) }}')">
                                 </div>
                             @endforeach
                         </div>
@@ -296,7 +296,7 @@
                             Manage Rooms
                         </a>
                         
-                        <a href="{{ route('b2b.hotel-provider.hotels.bookings', $hotel) }}" 
+                        <a href="{{ route('b2b.hotel-provider.bookings.hotel', $hotel) }}" 
                            class="btn btn-primary mb-2">
                             <i class="fas fa-calendar-check mr-2"></i>
                             View Bookings

@@ -3,7 +3,7 @@
     <div class="container-fluid">
         {{-- Brand/Logo --}}
         <a class="navbar-brand" href="{{ route('home') }}">
-            <i class="fas fa-mosque"></i>
+            <img src="{{ asset('images/logo/seferet-logo-notext-colored.png') }}" alt="SeferEt" class="navbar-logo" style="height: 50px; width: auto; margin-right: 8px;">
             <span>SeferEt</span>
         </a>
         

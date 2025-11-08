@@ -37,7 +37,10 @@ class Hotel extends Model
         'status',
         'is_active',
         'latitude',
-        'longitude'
+        'longitude',
+        'is_featured',
+        'featured_at',
+        'featured_expires_at',
     ];
 
     protected $casts = [
@@ -50,7 +53,10 @@ class Hotel extends Model
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'check_in_time' => 'datetime:H:i',
-        'check_out_time' => 'datetime:H:i'
+        'check_out_time' => 'datetime:H:i',
+        'is_featured' => 'boolean',
+        'featured_at' => 'datetime',
+        'featured_expires_at' => 'datetime',
     ];
 
     /**
@@ -122,6 +128,26 @@ class Hotel extends Model
     {
         return $this->hasMany(PricingRule::class);
     }
+    
+    /**
+     * Get featured requests for this hotel
+     */
+    public function featuredRequests(): HasMany
+    {
+        return $this->hasMany(FeaturedRequest::class, 'product_id')
+                    ->where('product_type', FeaturedRequest::PRODUCT_TYPE_HOTEL);
+    }
+    
+    /**
+     * Get active featured request for this hotel
+     */
+    public function activeFeaturedRequest()
+    {
+        return $this->featuredRequests()
+                    ->where('status', FeaturedRequest::STATUS_APPROVED)
+                    ->active()
+                    ->first();
+    }
 
     /**
      * Scope to filter active hotels
@@ -161,6 +187,18 @@ class Hotel extends Model
     public function scopeWithStarRating($query, $rating)
     {
         return $query->where('star_rating', $rating);
+    }
+    
+    /**
+     * Scope for featured hotels
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true)
+                    ->where(function($q) {
+                        $q->whereNull('featured_expires_at')
+                          ->orWhere('featured_expires_at', '>', now());
+                    });
     }
 
     /**

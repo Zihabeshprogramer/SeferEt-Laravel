@@ -25,6 +25,24 @@ class Kernel extends ConsoleKernel
                  ->everyFifteenMinutes()
                  ->withoutOverlapping()
                  ->runInBackground();
+        
+        // Unfeature expired products daily at 3 AM
+        $schedule->command('featured:cleanup')
+                 ->dailyAt('03:00')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+        
+        // Process ad scheduling (activate/expire ads, check limits) every minute
+        $schedule->job(new \App\Jobs\ProcessAdScheduling)
+                 ->everyMinute()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+        
+        // Aggregate ad analytics daily at 1 AM (for previous day)
+        $schedule->job(new \App\Jobs\AggregateAdAnalytics)
+                 ->dailyAt('01:00')
+                 ->withoutOverlapping()
+                 ->runInBackground();
     }
 
     /**

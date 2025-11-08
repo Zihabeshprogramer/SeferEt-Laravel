@@ -137,7 +137,7 @@ class StorePackageRequest extends FormRequest
             'external_providers.transport.*.notes' => ['nullable', 'string', 'max:1000'],
             
             // Location and logistics
-            'departure_cities' => ['nullable', 'array'],
+            'departure_cities' => ['required', 'array', 'min:1'],
             'departure_cities.*' => ['string', 'max:100'],
             
             'meeting_points' => ['nullable', 'array'],
@@ -237,6 +237,8 @@ class StorePackageRequest extends FormRequest
             'base_price.min' => 'Base price must be greater than 0.',
             'currency.required' => 'Currency is required.',
             'currency.in' => 'Invalid currency selected.',
+            'departure_cities.required' => 'At least one departure city is required.',
+            'departure_cities.min' => 'Please add at least one departure city.',
             'start_date.after_or_equal' => 'Start date must be today or a future date.',
             'end_date.after' => 'End date must be after the start date.',
             'max_participants.gte' => 'Maximum participants must be greater than or equal to minimum participants.',

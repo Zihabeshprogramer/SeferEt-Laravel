@@ -254,14 +254,57 @@
 
 <script>
 $(document).ready(function() {
-    // Initialize Select2 on filter dropdowns using global function
-    if (typeof window.initializeSelect2 === 'function') {
-        window.initializeSelect2('#partner-type-filter, #status-filter, #approval-status-filter');
-    } else {
-        console.error('Global Select2 initialization function not available');
+    // Initialize Select2 when document is ready
+    function initSelect2() {
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('#partner-type-filter, #status-filter, #approval-status-filter').each(function() {
+                if (!$(this).hasClass('select2-hidden-accessible')) {
+                    $(this).select2({
+                        theme: 'bootstrap4',
+                        width: '100%',
+                        placeholder: 'Select option...',
+                        allowClear: true
+                    });
+                }
+            });
+        } else {
+            console.error('Select2 is not loaded, retrying in 200ms...');
+            setTimeout(initSelect2, 200);
+        }
     }
     
-    var table = $('#partners-table').DataTable({
+    // Try to initialize immediately, then with fallback
+    initSelect2();
+    
+    // Check for URL parameters and pre-populate filters
+    function setFiltersFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let filtersChanged = false;
+        
+        if (urlParams.has('partner_type')) {
+            $('#partner-type-filter').val(urlParams.get('partner_type'));
+            filtersChanged = true;
+        }
+        if (urlParams.has('status')) {
+            $('#status-filter').val(urlParams.get('status'));
+            filtersChanged = true;
+        }
+        if (urlParams.has('approval_status')) {
+            $('#approval-status-filter').val(urlParams.get('approval_status'));
+            filtersChanged = true;
+        }
+        
+        // Trigger change events and refresh table if filters were set
+        if (filtersChanged) {
+            $('#partner-type-filter, #status-filter, #approval-status-filter').trigger('change');
+            if (window.partnersTable) {
+                window.partnersTable.draw();
+            }
+        }
+    }
+    
+    // Store table instance globally for filter access
+    window.partnersTable = $('#partners-table').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
@@ -270,6 +313,10 @@ $(document).ready(function() {
                 d.partner_type = $('#partner-type-filter').val();
                 d.status = $('#status-filter').val();
                 d.approval_status = $('#approval-status-filter').val();
+                console.log('DataTables AJAX request data:', d);
+            },
+            error: function(xhr, error, thrown) {
+                console.error('DataTables AJAX error:', error, thrown, xhr.responseText);
             }
         },
         columns: [
@@ -284,6 +331,11 @@ $(document).ready(function() {
         pageLength: 25,
         responsive: true
     });
+    
+    // Set filters after table is created
+    setTimeout(setFiltersFromURL, 1000);
+    
+    var table = window.partnersTable; // Keep reference for backward compatibility
 
     // Filter handlers
     $('#partner-type-filter, #status-filter, #approval-status-filter').change(function() {
@@ -291,7 +343,7 @@ $(document).ready(function() {
     });
 
     $('#clear-filters').click(function() {
-        $('#partner-type-filter, #status-filter, #approval-status-filter').val('');
+        $('#partner-type-filter, #status-filter, #approval-status-filter').val('').trigger('change');
         table.draw();
     });
 
@@ -399,9 +451,9 @@ $(document).ready(function() {
 
     window.filterByStatus = function(status) {
         if (status === 'pending') {
-            $('#approval-status-filter').val('pending');
+            $('#approval-status-filter').val('pending').trigger('change');
         } else {
-            $('#status-filter').val(status);
+            $('#status-filter').val(status).trigger('change');
         }
         table.draw();
     };
@@ -412,9 +464,7 @@ $(document).ready(function() {
 @push('styles')
 <!-- DataTables CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
-<!-- Select2 CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2-bootstrap4.min.css">
+<!-- Select2 CSS is already included in base layout -->
 
 <style>
 .info-box {

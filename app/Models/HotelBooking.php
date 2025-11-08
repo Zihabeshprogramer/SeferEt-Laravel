@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
@@ -152,9 +153,9 @@ class HotelBooking extends Model
     /**
      * Get all payments for this booking
      */
-    public function payments(): HasMany
+    public function payments(): MorphMany
     {
-        return $this->hasMany(BookingPayment::class);
+        return $this->morphMany(BookingPayment::class, 'bookable');
     }
 
     /**

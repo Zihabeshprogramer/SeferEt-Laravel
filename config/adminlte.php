@@ -362,6 +362,32 @@ return [
             'icon' => 'fas fa-fw fa-calendar-check',
         ],
         
+        ['header' => 'Content Management'],
+        
+        // Ad Management
+        [
+            'text' => 'Ad Management',
+            'icon' => 'fas fa-fw fa-ad',
+            'can' => 'admin',  // Only admins can see this
+            'submenu' => [
+                [
+                    'text' => 'All Ads',
+                    'route' => 'admin.ads.index',
+                    'icon' => 'fas fa-fw fa-list',
+                ],
+                [
+                    'text' => 'Pending Approval',
+                    'route' => 'admin.ads.pending',
+                    'icon' => 'fas fa-fw fa-clock',
+                ],
+                [
+                    'text' => 'Analytics',
+                    'route' => 'admin.ads.analytics.index',
+                    'icon' => 'fas fa-fw fa-chart-line',
+                ],
+            ],
+        ],
+        
         ['header' => 'Reports & Analytics'],
         
         // Analytics

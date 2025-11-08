@@ -229,8 +229,8 @@
             <div class="text-center mb-4">
                 <a href="{{ url('/') }}" class="text-decoration-none">
                     <h2 class="text-primary mb-0">
-                        <i class="fas fa-mosque mr-2 mosque-icon"></i>
-                        <span class="font-weight-bold">Sefer</span>Et
+                        <img src="{{ asset('images/logo/seferet-logo-notext-colored.png') }}" alt="SeferEt" style="height: 65px; width: 105px; margin-right: 8px;">
+                         <span class="font-weight-bold">Sefer</span>Et
                     </h2>
                 </a>
                 <p class="text-muted mt-2">Partner Portal</p>

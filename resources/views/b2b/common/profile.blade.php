@@ -39,7 +39,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('b2b.profile.update') }}" method="POST">
+                    <form action="{{ route('b2b.transport-provider.profile.update') }}" method="POST">
                         @csrf
                         @method('PUT')
                         
@@ -104,6 +104,123 @@
                                 </div>
                             </div>
                             
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tax_number" class="form-label">Tax Number</label>
+                                    <input type="text" class="form-control @error('tax_number') is-invalid @enderror" 
+                                           id="tax_number" name="tax_number" 
+                                           value="{{ old('tax_number', $partner->tax_number) }}">
+                                    @error('tax_number')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="contact_phone" class="form-label">Contact Phone</label>
+                                    <input type="text" class="form-control @error('contact_phone') is-invalid @enderror" 
+                                           id="contact_phone" name="contact_phone" 
+                                           value="{{ old('contact_phone', $partner->contact_phone) }}">
+                                    @error('contact_phone')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="website" class="form-label">Website</label>
+                                    <input type="url" class="form-control @error('website') is-invalid @enderror" 
+                                           id="website" name="website" 
+                                           value="{{ old('website', $partner->website) }}">
+                                    @error('website')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="company_description" class="form-label">Company Description</label>
+                                    <textarea class="form-control @error('company_description') is-invalid @enderror" 
+                                              id="company_description" name="company_description" rows="3">{{ old('company_description', $partner->company_description) }}</textarea>
+                                    @error('company_description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Address</label>
+                                    <input type="text" class="form-control @error('address') is-invalid @enderror" 
+                                           id="address" name="address" 
+                                           value="{{ old('address', $partner->address) }}">
+                                    @error('address')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="city" class="form-label">City</label>
+                                    <input type="text" class="form-control @error('city') is-invalid @enderror" 
+                                           id="city" name="city" 
+                                           value="{{ old('city', $partner->city) }}">
+                                    @error('city')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="state" class="form-label">State</label>
+                                    <input type="text" class="form-control @error('state') is-invalid @enderror" 
+                                           id="state" name="state" 
+                                           value="{{ old('state', $partner->state) }}">
+                                    @error('state')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="postal_code" class="form-label">Postal Code</label>
+                                    <input type="text" class="form-control @error('postal_code') is-invalid @enderror" 
+                                           id="postal_code" name="postal_code" 
+                                           value="{{ old('postal_code', $partner->postal_code) }}">
+                                    @error('postal_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="country" class="form-label">Country</label>
+                                    <input type="text" class="form-control @error('country') is-invalid @enderror" 
+                                           id="country" name="country" 
+                                           value="{{ old('country', $partner->country) }}">
+                                    @error('country')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Partner Type</label>

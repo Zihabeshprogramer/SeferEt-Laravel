@@ -22,8 +22,7 @@
         <!-- Logo -->
         <div class="login-logo">
             <a href="{{ url('/') }}">
-                <i class="fas fa-mosque text-primary mr-2"></i>
-                <b>Sefer</b>Et
+                <img src="{{ asset('images/logo/seferet-logo-colored-sidetext.png') }}" alt="SeferEt" style="height: 85px; width: 230px; margin-right: 8px;">
             </a>
         </div>
         

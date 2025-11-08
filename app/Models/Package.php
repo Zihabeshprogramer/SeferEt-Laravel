@@ -268,6 +268,8 @@ class Package extends Model
         'child_discount_percent_disabled' => 'boolean',
         'requires_deposit' => 'boolean',
         'is_featured' => 'boolean',
+        'featured_at' => 'datetime',
+        'featured_expires_at' => 'datetime',
         'is_premium' => 'boolean',
         'allow_customization' => 'boolean',
         'instant_booking' => 'boolean',
@@ -457,6 +459,26 @@ class Package extends Model
     }
     
     /**
+     * Get featured requests for this package
+     */
+    public function featuredRequests(): HasMany
+    {
+        return $this->hasMany(FeaturedRequest::class, 'product_id')
+                    ->where('product_type', FeaturedRequest::PRODUCT_TYPE_PACKAGE);
+    }
+    
+    /**
+     * Get active featured request for this package
+     */
+    public function activeFeaturedRequest()
+    {
+        return $this->featuredRequests()
+                    ->where('status', FeaturedRequest::STATUS_APPROVED)
+                    ->active()
+                    ->first();
+    }
+    
+    /**
      * Check if package can proceed (all service requests approved)
      */
     public function canProceed(): bool
@@ -614,6 +636,18 @@ class Package extends Model
     public function scopePremium($query)
     {
         return $query->where('is_premium', true);
+    }
+    
+    /**
+     * Scope for featured packages
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true)
+                    ->where(function($q) {
+                        $q->whereNull('featured_expires_at')
+                          ->orWhere('featured_expires_at', '>', now());
+                    });
     }
     
     /**

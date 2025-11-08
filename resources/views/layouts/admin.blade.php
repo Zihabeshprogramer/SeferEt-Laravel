@@ -98,6 +98,40 @@
         </a>
     </li>
 
+    <!-- Section: Content Management -->
+    <li class="nav-header">CONTENT MANAGEMENT</li>
+    
+    <!-- Ad Management -->
+    <li class="nav-item {{ request()->routeIs('admin.ads*') ? 'menu-open' : '' }}">
+        <a href="#" class="nav-link {{ request()->routeIs('admin.ads*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-ad"></i>
+            <p>
+                Ad Management
+                <i class="fas fa-angle-left right"></i>
+            </p>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{{ route('admin.ads.index') }}" class="nav-link {{ request()->routeIs('admin.ads.index') ? 'active' : '' }}">
+                    <i class="far fa-list-alt nav-icon"></i>
+                    <p>All Ads</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.ads.pending') }}" class="nav-link {{ request()->routeIs('admin.ads.pending') ? 'active' : '' }}">
+                    <i class="far fa-clock nav-icon"></i>
+                    <p>Pending Approval</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.ads.analytics.index') }}" class="nav-link {{ request()->routeIs('admin.ads.analytics*') ? 'active' : '' }}">
+                    <i class="far fa-chart-bar nav-icon"></i>
+                    <p>Analytics</p>
+                </a>
+            </li>
+        </ul>
+    </li>
+
     <!-- Section: Analytics & Reports -->
     <li class="nav-header">ANALYTICS & REPORTS</li>
     

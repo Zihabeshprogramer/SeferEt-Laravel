@@ -6,9 +6,7 @@
             <div class="col-lg-4 col-md-6">
                 <div class="footer-section">
                     <h5 class="footer-title d-flex align-items-center mb-3">
-                        <i class="fas fa-mosque me-2"></i>
-                        SeferEt
-                    </h5>
+                        <img src="{{ asset('images/logo/seferet-logo-white-sidetext.png') }}" alt="SeferEt" style="height: 85px; width: 230px; margin-right: 8px;">                    </h5>
                     <p class="footer-description mb-3">
                         Your trusted partner for Umrah journeys. We provide comprehensive travel packages and services to make your spiritual journey memorable and comfortable.
                     </p>

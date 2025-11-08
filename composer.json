@@ -9,6 +9,7 @@
         "doctrine/dbal": "^3.10",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.8",
+        "intervention/image": "^3.11",
         "jeroennoten/laravel-adminlte": "^3.9",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",

@@ -203,8 +203,26 @@
         <!-- Reports -->
         <li class="nav-item">
             <a href="{{ route('b2b.travel-agent.reports') }}" class="nav-link {{ request()->routeIs('b2b.travel-agent.reports') ? 'active' : '' }}">
-                <i class="nav-icon fas fa-chart-line"></i>
+                <i class="nav-icon fas fa-chart-bar"></i>
                 <p>Reports</p>
+            </a>
+        </li>
+        
+        <!-- Ads Management -->
+        <li class="nav-item">
+            <a href="{{ route('b2b.ads.index') }}" class="nav-link {{ request()->routeIs('b2b.ads*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-ad"></i>
+                <p>My Ads</p>
+                @php
+                    try {
+                        $draftAds = \App\Models\Ad::byOwner(auth()->id(), get_class(auth()->user()))->draft()->count();
+                    } catch (\Exception $e) {
+                        $draftAds = 0;
+                    }
+                @endphp
+                @if($draftAds > 0)
+                    <span class="badge badge-secondary right">{{ $draftAds }}</span>
+                @endif
             </a>
         </li>
     @endrole
@@ -291,6 +309,24 @@
             <a href="{{ route('b2b.hotel-provider.reports') }}" class="nav-link {{ request()->routeIs('b2b.hotel-provider.reports') ? 'active' : '' }}">
                 <i class="nav-icon fas fa-chart-bar"></i>
                 <p>Reports</p>
+            </a>
+        </li>
+        
+        <!-- Ads Management -->
+        <li class="nav-item">
+            <a href="{{ route('b2b.ads.index') }}" class="nav-link {{ request()->routeIs('b2b.ads*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-ad"></i>
+                <p>My Ads</p>
+                @php
+                    try {
+                        $draftAds = \App\Models\Ad::byOwner(auth()->id(), get_class(auth()->user()))->draft()->count();
+                    } catch (\Exception $e) {
+                        $draftAds = 0;
+                    }
+                @endphp
+                @if($draftAds > 0)
+                    <span class="badge badge-secondary right">{{ $draftAds }}</span>
+                @endif
             </a>
         </li>
     @endrole
@@ -383,6 +419,12 @@
                         <p>Maintenance</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('b2b.transport-provider.fleet.calendar') }}" class="nav-link {{ request()->routeIs('b2b.transport-provider.fleet.calendar') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-alt nav-icon"></i>
+                        <p>Calendar</p>
+                    </a>
+                </li>
             </ul>
         </li>
 
@@ -436,6 +478,24 @@
             <a href="{{ route('b2b.transport-provider.reports.index') }}" class="nav-link {{ request()->routeIs('b2b.transport-provider.reports*') ? 'active' : '' }}">
                 <i class="nav-icon fas fa-chart-pie"></i>
                 <p>Reports & Analytics</p>
+            </a>
+        </li>
+        
+        <!-- Ads Management -->
+        <li class="nav-item">
+            <a href="{{ route('b2b.ads.index') }}" class="nav-link {{ request()->routeIs('b2b.ads*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-ad"></i>
+                <p>My Ads</p>
+                @php
+                    try {
+                        $draftAds = \App\Models\Ad::byOwner(auth()->id(), get_class(auth()->user()))->draft()->count();
+                    } catch (\Exception $e) {
+                        $draftAds = 0;
+                    }
+                @endphp
+                @if($draftAds > 0)
+                    <span class="badge badge-secondary right">{{ $draftAds }}</span>
+                @endif
             </a>
         </li>
     @endrole

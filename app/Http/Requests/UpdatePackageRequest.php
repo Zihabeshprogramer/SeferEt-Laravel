@@ -115,7 +115,7 @@ class UpdatePackageRequest extends FormRequest
             'external_providers.transport.*.notes' => ['nullable', 'string', 'max:1000'],
             
             // Location and logistics
-            'departure_cities' => ['nullable', 'array'],
+            'departure_cities' => ['required', 'array', 'min:1'],
             'departure_cities.*' => ['string', 'max:100'],
             
             'meeting_points' => ['nullable', 'array'],
@@ -215,6 +215,8 @@ class UpdatePackageRequest extends FormRequest
             'description.required' => 'Package description is required.',
             'type.required' => 'Package type is required.',
             'type.in' => 'Invalid package type selected.',
+            'departure_cities.required' => 'At least one departure city is required.',
+            'departure_cities.min' => 'Please add at least one departure city.',
             'duration.required' => 'Package duration is required.',
             'duration.min' => 'Package duration must be at least 1 day.',
             'base_price.required' => 'Base price is required.',

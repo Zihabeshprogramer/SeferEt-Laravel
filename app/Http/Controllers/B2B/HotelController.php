@@ -84,7 +84,7 @@ class HotelController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validationRules = [
             'name' => 'required|string|max:255',
             'description' => 'required|string|max:2000',
             'type' => 'required|in:luxury,boutique,business,resort,budget,apartment',
@@ -98,16 +98,19 @@ class HotelController extends Controller
             'website' => 'nullable|url|max:255',
             'check_in_time' => 'required|date_format:H:i',
             'check_out_time' => 'required|date_format:H:i',
-            'distance_to_haram' => 'nullable|numeric|min:0',
-            'distance_to_airport' => 'nullable|numeric|min:0',
+            'distance_to_haram' => 'nullable|numeric|min:0|max:9999.99',
+            'distance_to_airport' => 'nullable|numeric|min:0|max:9999.99',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'amenities' => 'nullable|array',
-            'amenities.*' => 'string',
-            'images' => 'nullable|array|max:10',
-            'images.*' => 'image|mimes:jpeg,jpg,png|max:2048',
-            'policy_cancellation' => 'nullable|string|max:1000',
-            'policy_children' => 'nullable|string|max:1000',
-            'policy_pets' => 'nullable|string|max:1000'
-        ]);
+        ];
+        
+        // Only validate images if they are actually uploaded
+        if ($request->hasFile('images')) {
+            $validationRules['images.*'] = 'required|image|mimes:jpeg,jpg,png|max:5120';
+        }
+        
+        $validator = Validator::make($request->all(), $validationRules);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -120,7 +123,7 @@ class HotelController extends Controller
             'name', 'description', 'type', 'star_rating', 'address', 
             'city', 'country', 'postal_code', 'phone', 'email', 
             'website', 'check_in_time', 'check_out_time',
-            'distance_to_haram', 'distance_to_airport',
+            'distance_to_haram', 'distance_to_airport', 'latitude', 'longitude',
             'policy_cancellation', 'policy_children', 'policy_pets'
         ]));
         
@@ -131,12 +134,20 @@ class HotelController extends Controller
 
         // Handle image uploads
         if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('hotels/' . $hotel->id, 'public');
-                $imagePaths[] = $path;
+            $imageData = [];
+            foreach ($request->file('images') as $index => $image) {
+                $processedImage = $this->processImageUpload($image, 'hotels');
+                $imageData[] = [
+                    'id' => \Str::uuid()->toString(),
+                    'filename' => $processedImage['filename'],
+                    'original_name' => $image->getClientOriginalName(),
+                    'sizes' => $processedImage['sizes'],
+                    'is_main' => $index === 0, // First image is main by default
+                    'alt_text' => '',
+                    'uploaded_at' => now()->toISOString(),
+                ];
             }
-            $hotel->images = $imagePaths;
+            $hotel->images = $imageData;
             $hotel->save();
         }
 
@@ -218,31 +229,35 @@ class HotelController extends Controller
             abort(403, 'Unauthorized access to hotel.');
         }
 
-        $validator = Validator::make($request->all(), [
+        $validationRules = [
             'name' => 'required|string|max:255',
-            'description' => 'required|string|max:2000',
+            'description' => 'nullable|string|max:2000',
             'type' => 'required|in:luxury,boutique,business,resort,budget,apartment',
             'star_rating' => 'required|integer|min:1|max:5',
             'address' => 'required|string|max:500',
             'city' => 'required|string|max:100',
             'country' => 'required|string|max:100',
             'postal_code' => 'nullable|string|max:20',
-            'phone' => 'required|string|max:20',
-            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
             'website' => 'nullable|url|max:255',
-            'check_in_time' => 'required|date_format:H:i',
-            'check_out_time' => 'required|date_format:H:i',
-            'distance_to_haram' => 'nullable|numeric|min:0',
-            'distance_to_airport' => 'nullable|numeric|min:0',
+            'check_in_time' => 'nullable|date_format:H:i',
+            'check_out_time' => 'nullable|date_format:H:i',
+            'distance_to_haram' => 'nullable|numeric|min:0|max:9999.99',
+            'distance_to_airport' => 'nullable|numeric|min:0|max:9999.99',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
-            'new_images' => 'nullable|array|max:10',
-            'new_images.*' => 'image|mimes:jpeg,jpg,png|max:2048',
-            'remove_images' => 'nullable|array',
-            'policy_cancellation' => 'nullable|string|max:1000',
-            'policy_children' => 'nullable|string|max:1000',
-            'policy_pets' => 'nullable|string|max:1000'
-        ]);
+            'remove_images' => 'nullable|string',
+        ];
+        
+        // Only validate new_images if they are actually uploaded
+        if ($request->hasFile('new_images')) {
+            $validationRules['new_images.*'] = 'required|image|mimes:jpeg,jpg,png|max:5120';
+        }
+        
+        $validator = Validator::make($request->all(), $validationRules);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -254,29 +269,55 @@ class HotelController extends Controller
             'name', 'description', 'type', 'star_rating', 'address', 
             'city', 'country', 'postal_code', 'phone', 'email', 
             'website', 'check_in_time', 'check_out_time',
-            'distance_to_haram', 'distance_to_airport',
+            'distance_to_haram', 'distance_to_airport', 'latitude', 'longitude',
             'policy_cancellation', 'policy_children', 'policy_pets'
         ]));
         
+        // Update amenities
         $hotel->amenities = $request->amenities ?? [];
+        
+        // Update is_active status
+        $hotel->is_active = $request->has('is_active') ? true : false;
         
         // Handle image management
         $currentImages = $hotel->images ?? [];
         
         // Remove selected images
         if ($request->remove_images) {
-            $currentImages = array_diff($currentImages, $request->remove_images);
-            // Delete files from storage
-            foreach ($request->remove_images as $imagePath) {
-                Storage::disk('public')->delete($imagePath);
+            // Decode JSON array of image IDs to remove
+            $imagesToRemove = json_decode($request->remove_images, true) ?: [];
+            
+            if (!empty($imagesToRemove)) {
+                $updatedImages = [];
+                foreach ($currentImages as $image) {
+                    if (!in_array($image['id'], $imagesToRemove)) {
+                        $updatedImages[] = $image;
+                    } else {
+                        // Delete physical files for all sizes
+                        if (isset($image['sizes'])) {
+                            foreach ($image['sizes'] as $size => $path) {
+                                Storage::disk('public')->delete($path);
+                            }
+                        }
+                    }
+                }
+                $currentImages = $updatedImages;
             }
         }
         
         // Add new images
         if ($request->hasFile('new_images')) {
             foreach ($request->file('new_images') as $image) {
-                $path = $image->store('hotels/' . $hotel->id, 'public');
-                $currentImages[] = $path;
+                $processedImage = $this->processImageUpload($image, 'hotels');
+                $currentImages[] = [
+                    'id' => \Str::uuid()->toString(),
+                    'filename' => $processedImage['filename'],
+                    'original_name' => $image->getClientOriginalName(),
+                    'sizes' => $processedImage['sizes'],
+                    'is_main' => count($currentImages) === 0,
+                    'alt_text' => '',
+                    'uploaded_at' => now()->toISOString(),
+                ];
             }
         }
         
@@ -928,6 +969,133 @@ class HotelController extends Controller
         ]);
     }
 
+    /**
+     * Process image upload and create different sizes
+     */
+    private function processImageUpload($file, string $folder): array
+    {
+        \Log::info('Starting hotel image processing', [
+            'original_name' => $file->getClientOriginalName(),
+            'size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            'folder' => $folder
+        ]);
+        
+        $filename = time() . '_' . \Str::random(10) . '.' . $file->getClientOriginalExtension();
+        $path = "images/{$folder}/" . date('Y/m');
+        
+        // Ensure directory exists
+        $fullPath = storage_path("app/public/{$path}");
+        if (!file_exists($fullPath)) {
+            mkdir($fullPath, 0755, true);
+            \Log::info('Created directory', ['path' => $fullPath]);
+        }
+        
+        // Store original image
+        $originalPath = "{$path}/{$filename}";
+        $file->storeAs("public/{$path}", $filename);
+        \Log::info('Stored original image', ['path' => $originalPath]);
+        
+        try {
+            $sizes = [
+                'original' => $originalPath,
+                'large' => $this->createImageSize($file, $filename, $path, 1200, 800),
+                'medium' => $this->createImageSize($file, $filename, $path, 600, 400),
+                'thumbnail' => $this->createImageSize($file, $filename, $path, 300, 200),
+            ];
+            \Log::info('Created all hotel image sizes successfully', ['sizes' => array_keys($sizes)]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create hotel image sizes', ['error' => $e->getMessage()]);
+            throw $e;
+        }
+        
+        return [
+            'filename' => $filename,
+            'sizes' => $sizes,
+        ];
+    }
+    
+    /**
+     * Create resized image
+     */
+    private function createImageSize($file, string $filename, string $path, int $maxWidth, int $maxHeight): string
+    {
+        \Log::info('Creating hotel image size', [
+            'filename' => $filename, 
+            'dimensions' => "{$maxWidth}x{$maxHeight}",
+            'extension' => $file->getClientOriginalExtension()
+        ]);
+        
+        $extension = strtolower($file->getClientOriginalExtension());
+        $sizeSuffix = "_{$maxWidth}x{$maxHeight}";
+        $resizedFilename = pathinfo($filename, PATHINFO_FILENAME) . $sizeSuffix . '.' . $extension;
+        $resizedPath = "{$path}/{$resizedFilename}";
+        $fullResizedPath = storage_path("app/public/{$resizedPath}");
+        
+        // Create image resource
+        switch ($extension) {
+            case 'jpg':
+            case 'jpeg':
+                $image = \imagecreatefromjpeg($file->getPathname());
+                break;
+            case 'png':
+                $image = \imagecreatefrompng($file->getPathname());
+                break;
+            case 'webp':
+                $image = \imagecreatefromwebp($file->getPathname());
+                break;
+            default:
+                throw new \Exception('Unsupported image format');
+        }
+        
+        if (!$image) {
+            throw new \Exception('Failed to create image resource');
+        }
+        
+        // Get original dimensions
+        $originalWidth = \imagesx($image);
+        $originalHeight = \imagesy($image);
+        
+        // Calculate new dimensions maintaining aspect ratio
+        $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+        $newWidth = round($originalWidth * $ratio);
+        $newHeight = round($originalHeight * $ratio);
+        
+        // Create new image
+        $resizedImage = \imagecreatetruecolor($newWidth, $newHeight);
+        
+        // Preserve transparency for PNG and WebP
+        if ($extension === 'png' || $extension === 'webp') {
+            \imagealphablending($resizedImage, false);
+            \imagesavealpha($resizedImage, true);
+            $transparent = \imagecolorallocatealpha($resizedImage, 255, 255, 255, 127);
+            \imagefill($resizedImage, 0, 0, $transparent);
+        }
+        
+        // Resize image
+        \imagecopyresampled($resizedImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
+        
+        // Save resized image
+        switch ($extension) {
+            case 'jpg':
+            case 'jpeg':
+                \imagejpeg($resizedImage, $fullResizedPath, 85);
+                break;
+            case 'png':
+                \imagepng($resizedImage, $fullResizedPath, 6);
+                break;
+            case 'webp':
+                \imagewebp($resizedImage, $fullResizedPath, 85);
+                break;
+        }
+        
+        // Clean up memory
+        \imagedestroy($image);
+        \imagedestroy($resizedImage);
+        
+        return $resizedPath;
+    }
+    
     /**
      * Toggle room availability for a hotel room
      */

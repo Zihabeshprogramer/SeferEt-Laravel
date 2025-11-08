@@ -28,7 +28,7 @@ class B2BRegisterController extends Controller
      */
     public function showRegistrationForm()
     {
-        return view('auth.b2b.register', [
+        return view('b2b.auth.register', [
             'userTypes' => [
                 User::ROLE_PARTNER => 'Travel Package Partner',
                 User::ROLE_HOTEL_PROVIDER => 'Hotel Service Provider',
@@ -113,6 +113,6 @@ class B2BRegisterController extends Controller
      */
     public function pending()
     {
-        return view('auth.b2b.pending');
+        return view('b2b.auth.pending');
     }
 }

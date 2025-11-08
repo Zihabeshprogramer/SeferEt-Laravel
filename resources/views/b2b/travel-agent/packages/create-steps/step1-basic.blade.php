@@ -40,6 +40,13 @@
 .badge.bg-warning { color: #000 !important; }
 .btn-outline-primary { border-width: 2px; font-weight: 500; }
 .btn-outline-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3); }
+
+/* Dropdown suggestions styling */
+.destination-input-container, .departure-input-container { position: relative; }
+.dropdown-suggestions { position: absolute; z-index: 1000; width: 100%; background: white; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 0.375rem 0.375rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); max-height: 200px; overflow-y: auto; display: none; }
+.suggestion-item { padding: 0.5rem 0.75rem; cursor: pointer; transition: background-color 0.2s; }
+.suggestion-item:hover { background-color: #f8f9fa; }
+.destination-tag, .departure-city-tag { font-size: 0.9em; padding: 0.4em 0.6em; }
 </style>
 @endpush
 
@@ -195,6 +202,38 @@
         </div>
 
         <div class="row">
+            <!-- Departure Cities -->
+            <div class="col-md-6 mb-3">
+                <label for="departure_cities" class="form-label fw-bold">
+                    <i class="fas fa-plane-departure me-1"></i> Departure Cities <span class="text-danger">*</span>
+                </label>
+                <div class="departure-input-container">
+                    <input type="text" class="form-control" id="departureCitiesInput" 
+                           placeholder="Type departure city name and press Enter..." autocomplete="off">
+                    <div id="departureCitySuggestions" class="dropdown-suggestions"></div>
+                </div>
+                <div class="selected-departure-cities mt-2" id="selectedDepartureCities">
+                    <!-- Selected departure cities will appear here as tags -->
+                    @php
+                        $draftDepartureCities = is_array($draft->departure_cities ?? null) ? $draft->departure_cities : [];
+                        $oldDepartureCities = old('departure_cities', $draftDepartureCities);
+                        $departureCities = is_array($oldDepartureCities) ? $oldDepartureCities : [];
+                    @endphp
+                    @if(count($departureCities) > 0)
+                        @foreach($departureCities as $city)
+                            <span class="badge bg-info me-1 mb-1 departure-city-tag">
+                                {{ $city }}
+                                <button type="button" class="btn-close btn-close-white btn-sm ms-1" 
+                                        onclick="removeDepartureCity('{{ $city }}')"></button>
+                                <input type="hidden" name="departure_cities[]" value="{{ $city }}">
+                            </span>
+                        @endforeach
+                    @endif
+                </div>
+                <div class="invalid-feedback"></div>
+                <small class="form-text text-muted">Type city names where the trip departs from and press Enter. <strong>At least one departure city is required.</strong></small>
+            </div>
+
             <!-- Destinations -->
             <div class="col-md-6 mb-3">
                 <label for="destinations" class="form-label fw-bold">
@@ -226,9 +265,11 @@
                 <div class="invalid-feedback"></div>
                 <small class="form-text text-muted">Type destination names and press Enter to add them, or click on suggestions. <strong>At least one destination is required.</strong></small>
             </div>
+        </div>
 
+        <div class="row">
             <!-- Categories -->
-            <div class="col-md-6 mb-3">
+            <div class="col-md-12 mb-3">
                 <label for="categories" class="form-label fw-bold">
                     Categories
                 </label>
@@ -676,6 +717,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Destination autocomplete functionality
     setupDestinationAutocomplete();
     
+    // Departure cities autocomplete functionality
+    setupDepartureCitiesAutocomplete();
+    
     // Initialize image upload functionality
     initializeImageUpload();
 });
@@ -785,6 +829,138 @@ function isDestinationSelected(destination) {
     
     const selected = Array.from(destinationInputs).map(input => input.value || '');
     return selected.includes(destination);
+}
+
+// Departure Cities Autocomplete
+function setupDepartureCitiesAutocomplete() {
+    const input = document.getElementById('departureCitiesInput');
+    const suggestionsDiv = document.getElementById('departureCitySuggestions');
+    
+    if (!input || !suggestionsDiv) {
+        return;
+    }
+    
+    // International departure cities - grouped by region
+    const cities = [
+        // Turkey
+        'Istanbul', 'Ankara', 'Izmir', 'Antalya', 'Bursa', 'Adana', 
+        'Gaziantep', 'Konya', 'Mersin', 'Kayseri', 'Eskişehir', 'Diyarbakır',
+        'Samsun', 'Denizli', 'Şanlıurfa', 'Adapazarı', 'Malatya', 'Erzurum',
+        'Van', 'Batman', 'Elâzığ', 'Tekirdağ', 'Kocaeli', 'Manisa',
+        'Trabzon', 'Balıkesir', 'Kahramanmaraş', 'Aydın', 'Hatay',
+        
+        // Africa
+        'Addis Ababa', 'Cairo', 'Johannesburg', 'Lagos', 'Nairobi', 'Casablanca',
+        'Accra', 'Dar es Salaam', 'Khartoum', 'Kampala',
+        
+        // Middle East
+        'Dubai', 'Abu Dhabi', 'Riyadh', 'Jeddah', 'Doha', 'Kuwait City',
+        'Muscat', 'Manama', 'Amman', 'Beirut', 'Baghdad', 'Damascus',
+        
+        // Europe
+        'London', 'Paris', 'Berlin', 'Rome', 'Madrid', 'Amsterdam',
+        'Vienna', 'Brussels', 'Stockholm', 'Copenhagen', 'Oslo', 'Helsinki',
+        'Athens', 'Lisbon', 'Prague', 'Budapest', 'Warsaw', 'Bucharest',
+        
+        // Asia
+        'Jakarta', 'Kuala Lumpur', 'Singapore', 'Bangkok', 'Manila',
+        'Dhaka', 'Karachi', 'Lahore', 'Islamabad', 'Delhi', 'Mumbai',
+        'Kolkata', 'Chennai', 'Bangalore', 'Hyderabad',
+        
+        // North America
+        'New York', 'Los Angeles', 'Chicago', 'Houston', 'Toronto',
+        'Montreal', 'Vancouver', 'Washington DC', 'Boston', 'Miami',
+        
+        // Oceania
+        'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Auckland', 'Wellington'
+    ];
+    
+    input.addEventListener('input', function() {
+        const value = this.value.trim();
+        
+        if (value.length < 2) {
+            suggestionsDiv.style.display = 'none';
+            return;
+        }
+        
+        const matches = cities.filter(city => 
+            city.toLowerCase().includes(value.toLowerCase()) && 
+            !isDepartureCitySelected(city)
+        );
+        
+        if (matches.length > 0) {
+            suggestionsDiv.innerHTML = matches
+                .slice(0, 5)
+                .map(city => `<div class="suggestion-item" onclick="addDepartureCity('${city}')">${city}</div>`)
+                .join('');
+            suggestionsDiv.style.display = 'block';
+        } else {
+            suggestionsDiv.style.display = 'none';
+        }
+    });
+    
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const value = this.value.trim();
+            if (value && !isDepartureCitySelected(value)) {
+                addDepartureCity(value);
+                this.value = '';
+            }
+        }
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.departure-input-container')) {
+            suggestionsDiv.style.display = 'none';
+        }
+    });
+}
+
+function addDepartureCity(city) {
+    if (isDepartureCitySelected(city)) return;
+    
+    const container = document.getElementById('selectedDepartureCities');
+    if (!container) {
+        console.error('selectedDepartureCities container not found');
+        return;
+    }
+    
+    const tag = document.createElement('span');
+    tag.className = 'badge bg-info me-1 mb-1 departure-city-tag';
+    tag.innerHTML = `
+        ${city}
+        <button type="button" class="btn-close btn-close-white btn-sm ms-1" 
+                onclick="removeDepartureCity('${city}')"></button>
+        <input type="hidden" name="departure_cities[]" value="${city}">
+    `;
+    
+    container.appendChild(tag);
+    
+    const inputElement = document.getElementById('departureCitiesInput');
+    const suggestionsElement = document.getElementById('departureCitySuggestions');
+    
+    if (inputElement) inputElement.value = '';
+    if (suggestionsElement) suggestionsElement.style.display = 'none';
+}
+
+function removeDepartureCity(city) {
+    const tags = document.querySelectorAll('.departure-city-tag');
+    tags.forEach(tag => {
+        if (tag.textContent.trim().startsWith(city)) {
+            tag.remove();
+        }
+    });
+}
+
+function isDepartureCitySelected(city) {
+    const cityInputs = document.querySelectorAll('input[name="departure_cities[]"]');
+    if (!cityInputs || cityInputs.length === 0) {
+        return false;
+    }
+    
+    const selected = Array.from(cityInputs).map(input => input.value || '');
+    return selected.includes(city);
 }
 
 // Global function for initializing date range picker

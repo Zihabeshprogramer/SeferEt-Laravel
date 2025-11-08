@@ -1,6 +1,6 @@
 @extends('layouts.customer')
 
-@section('title', $package['name'] . ' - SeferEt')
+@section('title', $package->name . ' - SeferEt')
 
 @section('content')
     <!-- Package Hero Section -->
@@ -8,38 +8,59 @@
         <div class="hero-image-carousel">
             <div id="packageCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img src="https://images.unsplash.com/photo-1591604021695-0c4b8d9e384b?w=1200&h=600&fit=crop" class="d-block w-100" alt="Kaaba">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=600&fit=crop" class="d-block w-100" alt="Prophet's Mosque">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://images.unsplash.com/photo-1564769662265-4900ba1b3a2b?w=1200&h=600&fit=crop" class="d-block w-100" alt="Makkah">
-                    </div>
+                    @if(!empty($package->images))
+                        @foreach($package->images as $index => $image)
+                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                            <img src="{{ $image['urls']['large'] ?? $image['urls']['medium'] ?? asset('storage/' . $image['sizes']['medium']) }}" 
+                                 class="d-block w-100" alt="{{ $package->name }}">
+                        </div>
+                        @endforeach
+                    @else
+                        <!-- Default images if no package images -->
+                        <div class="carousel-item active">
+                            <img src="https://images.unsplash.com/photo-1591604021695-0c4b8d9e384b?w=1200&h=600&fit=crop" class="d-block w-100" alt="Kaaba">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=600&fit=crop" class="d-block w-100" alt="Prophet's Mosque">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://images.unsplash.com/photo-1564769662265-4900ba1b3a2b?w=1200&h=600&fit=crop" class="d-block w-100" alt="Makkah">
+                        </div>
+                    @endif
                 </div>
+                @if(!empty($package->images) && count($package->images) > 1)
                 <button class="carousel-control-prev" type="button" data-bs-target="#packageCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon"></span>
                 </button>
                 <button class="carousel-control-next" type="button" data-bs-target="#packageCarousel" data-bs-slide="next">
                     <span class="carousel-control-next-icon"></span>
                 </button>
+                @endif
             </div>
             
             <div class="hero-overlay">
                 <div class="container-fluid">
                     <div class="hero-content">
                         <div class="package-badges">
+                            @if($package->is_featured)
                             <span class="badge bg-success"><i class="fas fa-star me-1"></i>Featured</span>
+                            @endif
+                            @if($package->is_premium)
+                            <span class="badge bg-danger"><i class="fas fa-crown me-1"></i>Premium</span>
+                            @endif
                             <span class="badge bg-primary"><i class="fas fa-certificate me-1"></i>Verified Partner</span>
                         </div>
-                        <h1 class="package-hero-title">{{ $package['name'] }}</h1>
-                        <p class="package-hero-subtitle">{{ $package['duration'] }} Days Spiritual Journey</p>
+                        <h1 class="package-hero-title">{{ $package->name }}</h1>
+                        <p class="package-hero-subtitle">{{ $package->formatted_duration }} Spiritual Journey</p>
                         <div class="hero-rating">
-                            @for($i = 1; $i <= 5; $i++)
-                                <i class="fas fa-star {{ $i <= 4 ? 'text-warning' : 'text-muted' }}"></i>
-                            @endfor
-                            <span class="ms-2 text-white">(4.8/5) • 156 Reviews</span>
+                            @if($package->average_rating > 0)
+                                @for($i = 1; $i <= 5; $i++)
+                                    <i class="fas fa-star {{ $i <= $package->average_rating ? 'text-warning' : 'text-muted' }}"></i>
+                                @endfor
+                                <span class="ms-2 text-white">({{ number_format($package->average_rating, 1) }}/5) • {{ $package->reviews_count }} Reviews</span>
+                            @else
+                                <span class="text-white">New Package</span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -58,7 +79,13 @@
                             <i class="fas fa-info-circle text-primary me-2"></i>
                             Package Overview
                         </h2>
-                        <p class="package-description">{{ $package['description'] }}</p>
+                        <p class="package-description">{{ $package->description }}</p>
+                        @if($package->detailed_description)
+                        <div class="detailed-description mt-3">
+                            <h6>About This Package</h6>
+                            <p class="text-muted">{{ $package->detailed_description }}</p>
+                        </div>
+                        @endif
                         
                         <div class="package-highlights mt-4">
                             <div class="row g-3">
@@ -66,28 +93,46 @@
                                     <div class="highlight-item">
                                         <i class="fas fa-calendar text-primary fa-2x mb-2"></i>
                                         <h6>Duration</h6>
-                                        <p class="text-muted">{{ $package['duration'] }} Days</p>
+                                        <p class="text-muted">{{ $package->formatted_duration }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-3 text-center">
                                     <div class="highlight-item">
                                         <i class="fas fa-users text-success fa-2x mb-2"></i>
                                         <h6>Group Size</h6>
-                                        <p class="text-muted">Max 25 People</p>
+                                        <p class="text-muted">
+                                            @if($package->max_participants)
+                                                Max {{ $package->max_participants }} People
+                                            @else
+                                                Flexible Group Size
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="col-md-3 text-center">
                                     <div class="highlight-item">
                                         <i class="fas fa-plane text-info fa-2x mb-2"></i>
                                         <h6>Flights</h6>
-                                        <p class="text-muted">Direct Flights</p>
+                                        <p class="text-muted">
+                                            @if(isset($package->includes_flights) && $package->includes_flights)
+                                                Flights Included
+                                            @else
+                                                Flights Available
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="col-md-3 text-center">
                                     <div class="highlight-item">
                                         <i class="fas fa-hotel text-warning fa-2x mb-2"></i>
                                         <h6>Accommodation</h6>
-                                        <p class="text-muted">5-Star Hotels</p>
+                                        <p class="text-muted">
+                                            @if(isset($package->includes_accommodation) && $package->includes_accommodation)
+                                                Hotels Included
+                                            @else
+                                                Hotels Available
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -103,42 +148,87 @@
                     </h2>
                     
                     <div class="itinerary-timeline">
-                        @for($day = 1; $day <= $package['duration']; $day++)
-                            <div class="timeline-item">
-                                <div class="timeline-marker">
-                                    <div class="marker-circle">{{ $day }}</div>
-                                </div>
-                                <div class="timeline-content">
-                                    <h5>Day {{ $day }} - 
-                                        @if($day <= 3) Arrival & Makkah
-                                        @elseif($day <= 7) Makkah - Umrah Rituals
-                                        @elseif($day <= 10) Transfer to Madinah
-                                        @elseif($day <= 12) Madinah - Ziyarat
-                                        @else Departure
-                                        @endif
-                                    </h5>
-                                    <p class="text-muted mb-2">
-                                        @if($day == 1) Arrival at Jeddah Airport, transfer to Makkah hotel, rest and preparation
-                                        @elseif($day == 2) Check-in, perform first Umrah, visit Masjid al-Haram
-                                        @elseif($day <= 7) Perform Umrah rituals, Tawaf, Sa'i, spiritual activities at Haram
-                                        @elseif($day == 8) Transfer from Makkah to Madinah by bus/flight
-                                        @elseif($day <= 12) Visit Prophet's Mosque, Ziyarat tours, historical sites
-                                        @else Final prayers, shopping, departure to home country
-                                        @endif
-                                    </p>
-                                    <div class="day-activities">
-                                        <span class="activity-tag">
-                                            <i class="fas fa-map-marker-alt me-1"></i>
-                                            @if($day <= 7) Makkah @elseif($day <= 12) Madinah @else Airport @endif
-                                        </span>
-                                        <span class="activity-tag">
-                                            <i class="fas fa-utensils me-1"></i>
-                                            Meals Included
-                                        </span>
+                        @if(!empty($package->activities))
+                            @foreach($package->activities as $day => $dayActivities)
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">
+                                        <div class="marker-circle">{{ $day }}</div>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h5>Day {{ $day }}</h5>
+                                        @foreach($dayActivities as $activity)
+                                            <div class="activity-item mb-3">
+                                                @if($activity['title'])
+                                                    <h6 class="activity-title">{{ $activity['title'] }}</h6>
+                                                @endif
+                                                @if($activity['description'])
+                                                    <p class="text-muted mb-2">{{ $activity['description'] }}</p>
+                                                @endif
+                                                <div class="day-activities">
+                                                    @if($activity['location'])
+                                                    <span class="activity-tag">
+                                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                                        {{ $activity['location'] }}
+                                                    </span>
+                                                    @endif
+                                                    @if($activity['is_included'])
+                                                    <span class="activity-tag">
+                                                        <i class="fas fa-check me-1"></i>
+                                                        Included
+                                                    </span>
+                                                    @elseif($activity['additional_cost'])
+                                                    <span class="activity-tag">
+                                                        <i class="fas fa-dollar-sign me-1"></i>
+                                                        ${{ $activity['additional_cost'] }}
+                                                    </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
-                            </div>
-                        @endfor
+                            @endforeach
+                        @else
+                            <!-- Default itinerary if no activities defined -->
+                            @for($day = 1; $day <= $package->duration; $day++)
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">
+                                        <div class="marker-circle">{{ $day }}</div>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h5>Day {{ $day }} - 
+                                            @if($day <= 3) Arrival & Makkah
+                                            @elseif($day <= 7) Makkah - Umrah Rituals
+                                            @elseif($day <= 10) Transfer to Madinah
+                                            @elseif($day <= 12) Madinah - Ziyarat
+                                            @else Departure
+                                            @endif
+                                        </h5>
+                                        <p class="text-muted mb-2">
+                                            @if($day == 1) Arrival at Jeddah Airport, transfer to hotel, rest and preparation
+                                            @elseif($day == 2) Check-in, perform first Umrah, visit Masjid al-Haram
+                                            @elseif($day <= 7) Perform Umrah rituals, Tawaf, Sa'i, spiritual activities
+                                            @elseif($day == 8) Transfer from Makkah to Madinah
+                                            @elseif($day <= 12) Visit Prophet's Mosque, Ziyarat tours, historical sites
+                                            @else Final prayers, shopping, departure to home country
+                                            @endif
+                                        </p>
+                                        <div class="day-activities">
+                                            <span class="activity-tag">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                @if($day <= 7) Makkah @elseif($day <= 12) Madinah @else Airport @endif
+                                            </span>
+                                            @if(isset($package->includes_meals) && $package->includes_meals)
+                                            <span class="activity-tag">
+                                                <i class="fas fa-utensils me-1"></i>
+                                                Meals Included
+                                            </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endfor
+                        @endif
                     </div>
                 </x-customer.card>
 
@@ -152,25 +242,42 @@
                     <div class="row">
                         <div class="col-md-6">
                             <ul class="inclusion-list">
-                                <li><i class="fas fa-plane text-success me-2"></i>Round-trip flights</li>
-                                <li><i class="fas fa-hotel text-success me-2"></i>5-star hotel accommodation</li>
-                                <li><i class="fas fa-bus text-success me-2"></i>Airport transfers</li>
-                                <li><i class="fas fa-utensils text-success me-2"></i>Daily breakfast & dinner</li>
-                                <li><i class="fas fa-passport text-success me-2"></i>Visa processing</li>
-                                <li><i class="fas fa-user-tie text-success me-2"></i>Expert guide</li>
+                                @if(!empty($package->inclusions))
+                                    @foreach(array_slice($package->inclusions, 0, ceil(count($package->inclusions) / 2)) as $inclusion)
+                                    <li><i class="fas fa-check text-success me-2"></i>{{ $inclusion }}</li>
+                                    @endforeach
+                                @else
+                                    @foreach($package->includes as $include)
+                                    <li><i class="fas fa-check text-success me-2"></i>{{ $include }}</li>
+                                    @endforeach
+                                @endif
                             </ul>
                         </div>
                         <div class="col-md-6">
                             <ul class="inclusion-list">
-                                <li><i class="fas fa-wifi text-success me-2"></i>Free WiFi</li>
-                                <li><i class="fas fa-tshirt text-success me-2"></i>Ihram & prayer kit</li>
-                                <li><i class="fas fa-suitcase text-success me-2"></i>Zam Zam water</li>
-                                <li><i class="fas fa-shield-alt text-success me-2"></i>Travel insurance</li>
-                                <li><i class="fas fa-headset text-success me-2"></i>24/7 support</li>
-                                <li><i class="fas fa-book text-success me-2"></i>Umrah guide book</li>
+                                @if(!empty($package->inclusions) && count($package->inclusions) > 1)
+                                    @foreach(array_slice($package->inclusions, ceil(count($package->inclusions) / 2)) as $inclusion)
+                                    <li><i class="fas fa-check text-success me-2"></i>{{ $inclusion }}</li>
+                                    @endforeach
+                                @endif
+                                
+                                @foreach($package->features as $feature)
+                                <li><i class="fas fa-star text-warning me-2"></i>{{ $feature }}</li>
+                                @endforeach
                             </ul>
                         </div>
                     </div>
+                    
+                    @if(!empty($package->exclusions))
+                    <div class="exclusions-section mt-4">
+                        <h6 class="text-danger"><i class="fas fa-times me-2"></i>Not Included</h6>
+                        <ul class="exclusion-list text-muted">
+                            @foreach($package->exclusions as $exclusion)
+                            <li>{{ $exclusion }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
                 </x-customer.card>
 
                 <!-- Reviews -->
@@ -254,11 +361,16 @@
                     <div class="booking-header mb-3">
                         <div class="price-display">
                             <span class="price-label">Starting from</span>
-                            <h3 class="package-price text-primary">${{ number_format($package['price']) }}</h3>
+                            <h3 class="package-price text-primary">{{ $package->formatted_price }}</h3>
                             <span class="price-note">per person</span>
+                            @if($package->child_price && $package->child_price < $package->base_price)
+                                <div class="child-price mt-2">
+                                    <small class="text-muted">Child: ${{ number_format($package->child_price) }}</small>
+                                </div>
+                            @endif
                         </div>
                         <div class="partner-info">
-                            <small class="text-muted">By {{ $package['partner'] ?? 'SeferEt Partner' }}</small>
+                            <small class="text-muted">By {{ $package->creator_name }}</small>
                         </div>
                     </div>
 
@@ -290,7 +402,7 @@
                     <div class="booking-actions">
                         @auth
                             <x-customer.button 
-                                href="{{ route('packages.checkout', $package['id']) }}" 
+                                href="{{ route('customer.packages.checkout', $package->id) }}" 
                                 variant="primary" 
                                 size="lg" 
                                 fullWidth="true" 

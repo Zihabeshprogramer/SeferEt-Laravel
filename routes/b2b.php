@@ -363,15 +363,38 @@ Route::prefix('b2b')->name('b2b.')->group(function () {
             Route::get('pricing-rules', [\App\Http\Controllers\B2B\TransportProviderController::class, 'pricingRules'])->name('pricing-rules.index');
             
             // Fleet Management
-            Route::get('fleet/vehicles', function () {
-                return view('b2b.transport-provider.fleet.vehicles');
-            })->name('fleet.vehicles');
-            Route::get('fleet/drivers', function () {
-                return view('b2b.transport-provider.fleet.drivers');
-            })->name('fleet.drivers');
-            Route::get('fleet/maintenance', function () {
-                return view('b2b.transport-provider.fleet.maintenance');
-            })->name('fleet.maintenance');
+            Route::prefix('fleet')->name('fleet.')->group(function () {
+                // Vehicles
+                Route::get('vehicles', [\App\Http\Controllers\B2B\FleetController::class, 'vehiclesIndex'])->name('vehicles');
+                Route::get('vehicles/{vehicle}', [\App\Http\Controllers\B2B\FleetController::class, 'vehiclesShow'])->name('vehicles.show');
+                Route::post('vehicles', [\App\Http\Controllers\B2B\FleetController::class, 'vehiclesStore'])->name('vehicles.store');
+                Route::put('vehicles/{vehicle}', [\App\Http\Controllers\B2B\FleetController::class, 'vehiclesUpdate'])->name('vehicles.update');
+                Route::delete('vehicles/{vehicle}', [\App\Http\Controllers\B2B\FleetController::class, 'vehiclesDestroy'])->name('vehicles.destroy');
+                
+                // Drivers
+                Route::get('drivers', [\App\Http\Controllers\B2B\FleetController::class, 'driversIndex'])->name('drivers');
+                Route::get('drivers/{driver}', [\App\Http\Controllers\B2B\FleetController::class, 'driversShow'])->name('drivers.show');
+                Route::post('drivers', [\App\Http\Controllers\B2B\FleetController::class, 'driversStore'])->name('drivers.store');
+                Route::put('drivers/{driver}', [\App\Http\Controllers\B2B\FleetController::class, 'driversUpdate'])->name('drivers.update');
+                Route::delete('drivers/{driver}', [\App\Http\Controllers\B2B\FleetController::class, 'driversDestroy'])->name('drivers.destroy');
+                Route::post('drivers/assign', [\App\Http\Controllers\B2B\FleetController::class, 'assignDriverToVehicle'])->name('drivers.assign');
+                
+                // Maintenance
+                Route::get('maintenance', [\App\Http\Controllers\B2B\FleetController::class, 'maintenanceIndex'])->name('maintenance');
+                Route::post('maintenance', [\App\Http\Controllers\B2B\FleetController::class, 'maintenanceStore'])->name('maintenance.store');
+                Route::put('maintenance/{maintenance}/status', [\App\Http\Controllers\B2B\FleetController::class, 'maintenanceUpdateStatus'])->name('maintenance.status');
+                Route::delete('maintenance/{maintenance}', [\App\Http\Controllers\B2B\FleetController::class, 'maintenanceDestroy'])->name('maintenance.destroy');
+                
+                // Availability & Assignment
+                Route::post('check-availability', [\App\Http\Controllers\B2B\FleetController::class, 'checkAvailability'])->name('check-availability');
+                Route::post('assign-service-request', [\App\Http\Controllers\B2B\FleetController::class, 'assignToServiceRequest'])->name('assign-service-request');
+                
+                // Calendar
+                Route::get('calendar', function() {
+                    return view('b2b.transport-provider.fleet.calendar');
+                })->name('calendar');
+                Route::get('calendar/data', [\App\Http\Controllers\B2B\FleetController::class, 'calendarData'])->name('calendar.data');
+            });
             
             // Operations Management - Booking Management
             Route::get('operations/bookings', [\App\Http\Controllers\B2B\TransportProviderController::class, 'bookings'])->name('operations.bookings');
@@ -392,9 +415,8 @@ Route::prefix('b2b')->name('b2b.')->group(function () {
             })->name('reports.index');
             
             // Profile
-            Route::get('profile', function () {
-                return view('b2b.transport-provider.profile.index');
-            })->name('profile.index');
+            Route::get('profile', [\App\Http\Controllers\B2B\TransportProviderController::class, 'profile'])->name('profile.index');
+            Route::put('profile', [\App\Http\Controllers\B2B\TransportProviderController::class, 'updateProfile'])->name('profile.update');
             
             // Legacy bookings route for compatibility
             Route::get('bookings', function () {
@@ -427,6 +449,21 @@ Route::prefix('b2b')->name('b2b.')->group(function () {
         | Shared B2B Routes (All Partner Types)
         |--------------------------------------------------------------------------
         */
+        // Ad Management (All B2B Users)
+        Route::prefix('ads')->name('ads.')->middleware(['role:travel_agent,hotel_provider,transport_provider'])->group(function () {
+            Route::get('/', [\App\Http\Controllers\B2B\AdController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\B2B\AdController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\B2B\AdController::class, 'store'])->name('store');
+            Route::get('/data/list', [\App\Http\Controllers\B2B\AdController::class, 'getData'])->name('data');
+            Route::get('/stats/summary', [\App\Http\Controllers\B2B\AdController::class, 'getStats'])->name('stats');
+            Route::get('/{ad}', [\App\Http\Controllers\B2B\AdController::class, 'show'])->name('show');
+            Route::get('/{ad}/edit', [\App\Http\Controllers\B2B\AdController::class, 'edit'])->name('edit');
+            Route::put('/{ad}', [\App\Http\Controllers\B2B\AdController::class, 'update'])->name('update');
+            Route::delete('/{ad}', [\App\Http\Controllers\B2B\AdController::class, 'destroy'])->name('destroy');
+            Route::post('/{ad}/submit-for-approval', [\App\Http\Controllers\B2B\AdController::class, 'submitForApproval'])->name('submit-for-approval');
+            Route::post('/{ad}/toggle-active', [\App\Http\Controllers\B2B\AdController::class, 'toggleActive'])->name('toggle-active');
+        });
+        
         Route::get('notifications', function () {
             return view('b2b.common.notifications.index');
         })->name('notifications');
