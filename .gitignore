@@ -75,6 +75,12 @@ storage/debugbar/
 .env.test
 .env.production.local
 
+# Development/debug scripts (may contain sensitive info)
+check_*.php
+reset_*.php
+update_*.php
+test-*.php
+
 # Temporary files
 *.tmp
 *.temp
